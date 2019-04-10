@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+   Interactive Timeslice version 1.0
+  
+   Copyright ⓒ 2017 kt corp. All rights reserved.
+   
+   This is a proprietary software of kt corp, and you may not use this file except in 
+   compliance with license agreement with kt corp. Any redistribution or use of this 
+   software, with or without modification shall be strictly prohibited without prior written 
+   approval of kt corp, and the copyright notice above does not evidence any actual or 
+   intended publication of such software. 
+ -->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kt.its.api.data2.PESTblMapper">
+
+	<select id="selectTrackingList" resultType="map" parameterType="map">
+		SELECT 
+			gamecode
+			, mvcode 
+			, frame 
+			, camid 
+			, x, y, w, h
+			, valid_cam  
+		FROM  PEStbl 
+		WHERE mvcode = #{multiviewId}
+		AND frame = #{frameNo}
+		ORDER BY camid
+		;
+	</select>
+
+	
+</mapper>

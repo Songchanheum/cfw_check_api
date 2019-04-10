@@ -1,0 +1,358 @@
+/*
+* Interactive Timeslice version 1.0
+*
+*  Copyright ⓒ 2017 kt corp. All rights reserved.
+*
+*  This is a proprietary software of kt corp, and you may not use this file except in
+*  compliance with license agreement with kt corp. Any redistribution or use of this
+*  software, with or without modification shall be strictly prohibited without prior written
+*  approval of kt corp, and the copyright notice above does not evidence any actual or
+*  intended publication of such software.
+*/
+package com.kt.its.api.controller;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kt.its.api.common.CommonUtil;
+import com.kt.its.api.common.Resource;
+import com.kt.its.api.common.HttpClient;
+import com.kt.its.api.common.ResultUtil;
+import com.kt.its.api.common.ResultUtil.RESULT_CODE;
+
+/** 
+ * <pre>
+ * 설명		: 카메라 정보 조회 및 동작 제어를 위한 API Controller
+ * 작성일 	: 2017.02.08
+ * 작성자 	: yccho
+ * 변경 이력 	:
+ * </pre>
+ */
+@Controller
+public class CameraController extends BaseController {
+
+	/**
+	 * 전체 카메라 정보 조회
+	 * @param request 
+	 * @return
+	 */
+	@RequestMapping(value = "/camera/camInfo", method = RequestMethod.GET)
+	public @ResponseBody Map<String, Object> camInfo(
+			HttpServletRequest request) {
+		
+		String procTitle = "[전체 카메라 정보 조회] ";
+		logger.info(procTitle + "Start camInfo :: ");
+		
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+		ObjectMapper mapper = new ObjectMapper();
+		
+		try {
+			//String resultStr = HttpClient.call(Resource.SERVER_SETTING.getCaptureUrl()+"/camera/info");
+			String resultStr = HttpClient.call(Resource.CAPTURE_SERVER_URL+"/camera/info");
+			
+			if(resultStr == null) {
+				ResultUtil.setError(RESULT_CODE.CONNECT_ERROR, resultMap);
+			}
+			else if(CommonUtil.isJSONValid(resultStr)) {
+				resultMap = mapper.readValue(resultStr, new TypeReference<HashMap<String, Object>>() {});
+			
+				verifyResult(resultMap);
+				
+			} else {
+				ResultUtil.setError(RESULT_CODE.DATA_TYPE_ERROR, resultMap);
+			}
+		}
+		catch(Exception e) {
+			logger.error(procTitle + "Exception :: ", e);
+			ResultUtil.setError(RESULT_CODE.SYSTEM_ERROR, resultMap);
+		}
+
+		logger.debug(procTitle + "Result :: " + resultMap.toString());
+		logger.info(procTitle + "End camInfo :: ");
+		
+		return resultMap;
+	}
+	
+	/**
+	 * 특정 카메라 정보 조회
+	 * @param request
+	 * @param camId
+	 * @return
+	 */
+	@RequestMapping(value = "/camera/camInfo/{camId}", method = RequestMethod.GET)
+	public @ResponseBody Map<String, Object> camInfo(
+			HttpServletRequest request,
+			@PathVariable String camId) {
+		
+		String procTitle = "[특정 카메라 정보 조회] ";
+		logger.info(procTitle + "Start camInfo :: camId=" + camId);
+		
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+		ObjectMapper mapper = new ObjectMapper();
+		
+		try {
+			//String resultStr = HttpClient.call(Resource.SERVER_SETTING.getCaptureUrl()+"/camera/info/"+camId);
+			String resultStr = HttpClient.call(Resource.CAPTURE_SERVER_URL+"/camera/info/"+camId);
+			
+			if(resultStr == null) {
+				ResultUtil.setError(RESULT_CODE.CONNECT_ERROR, resultMap);
+			}
+			else if(CommonUtil.isJSONValid(resultStr)) {
+				resultMap = mapper.readValue(resultStr, new TypeReference<HashMap<String, Object>>() {});
+			
+				verifyResult(resultMap);
+				
+			} else {
+				ResultUtil.setError(RESULT_CODE.DATA_TYPE_ERROR, resultMap);
+			}
+		}
+		catch(Exception e) {
+			logger.error(procTitle + "Exception :: ", e);
+			ResultUtil.setError(RESULT_CODE.SYSTEM_ERROR, resultMap);
+		}
+		
+		logger.debug(procTitle + "Result :: " + resultMap.toString());
+		logger.info(procTitle + "End camInfo :: camId=" + camId);
+		
+		return resultMap;
+	}
+
+	
+	/**
+	 * 전체 카메라 동작 상태 조회
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/camera/camState", method = RequestMethod.GET)
+	public @ResponseBody Map<String, Object> camState(
+			HttpServletRequest request) {
+		
+		String procTitle = "[전체 카메라 동작 상태 조회] ";
+		logger.info(procTitle + "Start camState :: ");
+		
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+		ObjectMapper mapper = new ObjectMapper();
+		
+		try {
+			//String resultStr = HttpClient.call(Resource.SERVER_SETTING.getCaptureUrl()+"/camera/state");
+			String resultStr = HttpClient.call(Resource.CAPTURE_SERVER_URL+"/camera/state");
+			
+			if(resultStr == null) {
+				ResultUtil.setError(RESULT_CODE.CONNECT_ERROR, resultMap);
+			}
+			else if(CommonUtil.isJSONValid(resultStr)) {
+				resultMap = mapper.readValue(resultStr, new TypeReference<HashMap<String, Object>>() {});
+			
+				verifyResult(resultMap);
+				
+			} else {
+				ResultUtil.setError(RESULT_CODE.DATA_TYPE_ERROR, resultMap);
+			}
+		}
+		catch(Exception e) {
+			logger.error(procTitle + "Exception :: ", e);
+			ResultUtil.setError(RESULT_CODE.SYSTEM_ERROR, resultMap);
+		}
+		
+		logger.debug(procTitle + "Result :: " + resultMap.toString());
+		logger.info(procTitle + "End camState :: ");
+		
+		return resultMap;
+	}
+	
+	/**
+	 * 특정 카메라 정보 조회
+	 * @param request 
+	 * @param camId
+	 * @return
+	 */
+	@RequestMapping(value = "/camera/camState/{camId}", method = RequestMethod.GET)
+	public @ResponseBody Map<String, Object> camState(
+			HttpServletRequest request,
+			@PathVariable String camId) {
+		
+		String procTitle = "[특정 카메라 동작 상태 조회] ";
+		logger.info(procTitle + "Start camState :: camId=" + camId);
+		
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+		ObjectMapper mapper = new ObjectMapper();
+		
+		try {
+			//String resultStr = HttpClient.call(Resource.SERVER_SETTING.getCaptureUrl()+"/camera/state/"+camId);
+			String resultStr = HttpClient.call(Resource.CAPTURE_SERVER_URL+"/camera/state/"+camId);
+
+			if(resultStr == null) {
+				ResultUtil.setError(RESULT_CODE.CONNECT_ERROR, resultMap);
+			}
+			else if(CommonUtil.isJSONValid(resultStr)) {
+				resultMap = mapper.readValue(resultStr, new TypeReference<HashMap<String, Object>>() {});
+			
+				verifyResult(resultMap);
+				
+			} else {
+				ResultUtil.setError(RESULT_CODE.DATA_TYPE_ERROR, resultMap);
+			}
+		}
+		catch(Exception e) {
+			logger.error(procTitle + "Exception :: ", e);
+			ResultUtil.setError(RESULT_CODE.SYSTEM_ERROR, resultMap);
+		}
+		
+		logger.debug(procTitle + "Result :: " + resultMap.toString());
+		logger.info(procTitle + "End camState :: camId=" + camId);
+		
+		return resultMap;
+	}
+	
+	/**
+	 * 전체 카메라 동작 제어
+	 * @param request
+	 * @param command
+	 * @return
+	 */
+	@RequestMapping(value = "/camera/control/{command}", method = RequestMethod.GET)
+	public @ResponseBody Map<String, Object> control(
+			HttpServletRequest request,
+			@PathVariable String command) {
+		
+		String procTitle = "[전체 카메라 동작 제어] ";
+		logger.info(procTitle + "Start control :: command=" + command);
+		
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+		ObjectMapper mapper = new ObjectMapper();
+		
+		try {
+			//String resultStr = HttpClient.call(Resource.SERVER_SETTING.getCaptureUrl()+"/camera/control/"+command);
+			String resultStr = HttpClient.call(Resource.CAPTURE_SERVER_URL+"/camera/control/"+command);
+			
+			if(resultStr == null) {
+				ResultUtil.setError(RESULT_CODE.CONNECT_ERROR, resultMap);
+			}
+			else if(CommonUtil.isJSONValid(resultStr)) {
+				resultMap = mapper.readValue(resultStr, new TypeReference<HashMap<String, Object>>() {});
+			
+				verifyResult(resultMap);
+				
+			} else {
+				ResultUtil.setError(RESULT_CODE.DATA_TYPE_ERROR, resultMap);
+			}
+		}
+		catch(Exception e) {
+			logger.error(procTitle + "Exception :: ", e);
+			ResultUtil.setError(RESULT_CODE.SYSTEM_ERROR, resultMap);
+		}
+		
+		logger.debug(procTitle + "Result :: " + resultMap.toString());
+		logger.info(procTitle + "End control :: command=" + command);
+		
+		return resultMap;
+	}
+	
+//	/**
+//	 * 전체 카메라 영상 수집 상태 조회
+//	 * @param request
+//	 * @return
+//	 */
+//	@RequestMapping(value = "/camera/colState", method = RequestMethod.GET)
+//	public @ResponseBody Map<String, Object> colState(
+//			HttpServletRequest request) {
+//		
+//		String procTitle = "[전체 카메라 영상 수집 상태 조회] ";
+//		logger.info(procTitle + "Start colState :: ");
+//		
+//		Map<String, Object> resultMap = new HashMap<String, Object>();
+//		ObjectMapper mapper = new ObjectMapper();
+//		
+//		try {
+//			String resultStr = HttpClient.call(Constants.CAPTURE_SERVER.getServerUrl()+"/camera/colState");
+////			String resultStr = HttpClient.call(Constants.CAPTURE_SERVER.getServerUrl()+request.getServletPath());
+//			
+//			if(resultStr == null) {
+//				ResultUtil.setError(RESULT_CODE.CONNECT_ERROR, resultMap);
+//			}
+//			else if(CommonUtil.isJSONValid(resultStr)) {
+//				resultMap = mapper.readValue(resultStr, new TypeReference<HashMap<String, Object>>() {});
+//			
+//				verifyResult(resultMap);
+//	
+//				logger.debug(procTitle + "Result :: " + resultMap.toString());
+//			} else {
+//				ResultUtil.setError(RESULT_CODE.DATA_TYPE_ERROR, resultMap);
+//			}
+//		}
+//		catch(Exception e) {
+//			logger.error(procTitle + "Exception :: ", e);
+//			ResultUtil.setError(RESULT_CODE.SYSTEM_ERROR, resultMap);
+//		}
+//		
+//		logger.info(procTitle + "End colState :: ");
+//		
+//		return resultMap;
+//	}
+//	
+//	/**
+//	 * 특정 카메라 영상 수집 상태 조회
+//	 * @param request 
+//	 * @param camId
+//	 * @return
+//	 */
+//	@RequestMapping(value = "/camera/colState/{camId}", method = RequestMethod.GET)
+//	public @ResponseBody Map<String, Object> colState(
+//			HttpServletRequest request,
+//			@PathVariable String camId) {
+//		
+//		String procTitle = "[특정 카메라 영상 수집 상태 조회] ";
+//		logger.info(procTitle + "Start colState :: camId=" + camId);
+//		
+//		Map<String, Object> resultMap = new HashMap<String, Object>();
+//		ObjectMapper mapper = new ObjectMapper();
+//		
+//		try {
+//			String resultStr = HttpClient.call(Constants.CAPTURE_SERVER.getServerUrl()+"/camera/colState/"+camId);
+////			String resultStr = HttpClient.call(Constants.CAPTURE_SERVER.getServerUrl()+request.getServletPath());
+//			
+//			if(resultStr == null) {
+//				ResultUtil.setError(RESULT_CODE.CONNECT_ERROR, resultMap);
+//			}
+//			else if(CommonUtil.isJSONValid(resultStr)) {
+//				resultMap = mapper.readValue(resultStr, new TypeReference<HashMap<String, Object>>() {});
+//			
+//				verifyResult(resultMap);
+//	
+//				logger.debug(procTitle + "Result :: " + resultMap.toString());
+//			} else {
+//				ResultUtil.setError(RESULT_CODE.DATA_TYPE_ERROR, resultMap);
+//			}
+//		}
+//		catch(Exception e) {
+//			logger.error(procTitle + "Exception :: ", e);
+//			ResultUtil.setError(RESULT_CODE.SYSTEM_ERROR, resultMap);
+//		}
+//		
+//		logger.info(procTitle + "End colState :: camId=" + camId);
+//		
+//		return resultMap;
+//	}
+	
+	private void verifyResult(Map<String, Object> resultMap) {
+		try {
+			if(resultMap.containsKey("rstCode")) {
+				resultMap.put("rstCd", (String)resultMap.get("rstCode"));
+				resultMap.remove("rstCode");
+			}
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+}

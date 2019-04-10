@@ -1,0 +1,269 @@
+/*
+* Interactive Timeslice version 1.0
+*
+*  Copyright ⓒ 2017 kt corp. All rights reserved.
+*
+*  This is a proprietary software of kt corp, and you may not use this file except in
+*  compliance with license agreement with kt corp. Any redistribution or use of this
+*  software, with or without modification shall be strictly prohibited without prior written
+*  approval of kt corp, and the copyright notice above does not evidence any actual or
+*  intended publication of such software.
+*/
+
+package com.kt.its.api.common;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/** 
+ * <pre>
+ * 설명         : Utility function 클래스
+ * 작성일       : 2017.02.08
+ * 작성자       : yccho
+ * 변경 이력    :
+ * </pre>
+ */
+
+@SuppressWarnings("PMD")
+public class CommonUtil {
+	private static final Logger logger = LoggerFactory.getLogger(CommonUtil.class);
+	
+	public static boolean isEmpty(String str) {
+		if(str == null || "".equals(str.trim()))
+			return true;
+		else
+			return false;
+	}
+	
+	public static boolean isEmpty(Object obj) {
+		if(obj == null)
+			return true;
+		else
+			return false;
+	}
+	
+	public static String null2Empty(String str) {
+		if(str == null)
+			return "";
+		else
+			return str;
+	}
+	
+	public static Object null2Empty(Object obj) {
+		if(obj == null)
+			return "";
+		else 
+			return obj;
+	}
+	
+	public static String null2Value(String str, String value) {
+		if(str == null)
+			return value;
+		else
+			return str;
+	}
+	
+	public static Object null2Value(Object obj, String value) {
+		if(obj == null)
+			return value;
+		else 
+			return obj;
+	}
+	
+	public static List<String> getInvalidParams(String[] validKeys, Map<String, Object> paramMap) {
+		
+		List<String> invalidParams = new ArrayList<String>();
+
+		if(validKeys != null) {
+			for(String key : validKeys) {
+				if( paramMap != null && paramMap.containsKey(key) ) {
+					Object obj = paramMap.get(key);
+					if(obj instanceof String) {
+						String value = CommonUtil.null2Empty((String)obj);
+						if(value.trim().equals("")) {
+							invalidParams.add(key);
+						}
+					} else if(obj == null) {
+						invalidParams.add(key);
+					}
+				}
+				else {
+					invalidParams.add(key);
+				}
+			}
+		
+			if(invalidParams.size() > 0)
+				logger.debug("inValidParams :: " + invalidParams.toString());
+		}
+		
+		return invalidParams;
+	}
+	
+	public static boolean isValidElement(String[] correctParams, String requestParam) {
+		return makeArrayToList(correctParams).contains(requestParam);		
+	}
+	
+	public static List<String> makeArrayToList(String[] str) {
+		return new ArrayList<>(Arrays.asList(str));
+	}
+	
+	public static boolean isJSONValid(String str) {
+		if(str == null) return false;
+		
+	    try {
+	        new JSONObject(str);
+	    } catch (JSONException ex) {
+	        try {
+	            new JSONArray(str);
+	        } catch (JSONException ex1) {
+	            return false;
+	        }
+	    }
+	    return true;
+	}
+	
+	/**
+	 * 현재 날짜 및 시간을 얻는다
+	 * @param pattern String
+	 * @return 현재시간()
+	 */
+	public static String getCurrentDateTime(String pattern) {
+		Date date = new Date();
+		SimpleDateFormat formatter = new SimpleDateFormat();
+		formatter.applyPattern(pattern);
+		return formatter.format(date);
+	}
+	
+	/**
+	 * 현재 날짜 및 시간을 얻는다
+	 * @return 현재시간(yyyyMMddHHmmss)
+	 */
+	public static String getCurrentDateTime() {
+		return getCurrentDateTime("yyyyMMddHHmmss");
+	}
+	
+	/**
+	 * 현재 날짜 및 시간을 얻는다(ms포함)
+	 * @return 현재시간(yyyyMMddHHmmss)
+	 */
+	public static String getCurrentDateTimeMilis() {
+		return getCurrentDateTime("yyyyMMddHHmmssSSS");
+	}
+	
+	
+	public static String getLiveUrl() {
+		//String url = Resource.SERVER_SETTING.getLiveUrl() + "/" + Resource.VOD_FILE_NAME;
+		String url = Resource.RESOURCE_SERVER_URL + Resource.LIVE_DIR + "/" + Resource.VOD_FILE_NAME;
+		
+		return url;
+	}
+		
+	public static String getReplayUrl(String vodId) {
+		return getReplayUrl(vodId, null);
+	}
+	
+	public static String getReplayUrl(String vodId, String fileName) {
+		return getReplayUrl(vodId, fileName, true);
+	}
+	
+	public static String getReplayUrl(String vodId, String fileName, boolean isVodFile) {
+		//String url = Resource.SERVER_SETTING.getReplayUrl() + "/" + vodId + "/";
+		String url = Resource.RESOURCE_SERVER_URL + Resource.REPLAY_DIR + "/" + vodId + "/";
+		
+		if(!isEmpty(fileName))
+			url += fileName;
+		else if(isVodFile)
+			url += Resource.VOD_FILE_NAME;
+		else 
+			url = "";
+			
+		return url;
+	}
+	
+	public static String getTimesliceUrl(String timesliceId) {
+		return getTimesliceUrl(timesliceId, null);
+	}
+	
+	public static String getTimesliceUrl(String timesliceId, String fileName) {
+		return getTimesliceUrl(timesliceId, fileName, true);
+	}
+	
+	public static String getTimesliceUrl(String timesliceId, String fileName, boolean isVodFile) {
+		//String url = Resource.SERVER_SETTING.getTimesliceUrl() + "/";// + timesliceId + "/";
+		String url = Resource.RESOURCE_SERVER_URL + Resource.TIMESLICE_DIR + "/" + timesliceId + "/";
+		
+		if(!isEmpty(fileName))
+			url += fileName;
+		else if(isVodFile)
+			url += timesliceId + "." + Resource.VOD_FILE_EXT;
+		else 
+			url = "";
+		
+		return url;
+	}
+
+	public static String getCompUrl() {
+		return Resource.RESOURCE_SERVER_URL + Resource.COMP_DIR + "/";
+	}
+	
+	public static String getCompUrl(String compId, String fileName) {
+		String url = "";
+		
+		if(!isEmpty(fileName)) {
+			if(!isEmpty(compId))
+				url = getCompUrl() + compId + "/" + fileName;
+			else
+				url = getCompUrl() + fileName;
+		}
+		
+		return url;
+	}
+	
+	
+	public static Map<String, String> getIpAndPort(String url) {
+		if(url == null || url.trim().equals(""))
+			return null;
+		
+		String ip = "", port = "";
+		String defaultPort = "";
+		
+		int n = url.indexOf("://");
+		if(n != -1) {
+			if(url.startsWith("https"))
+				defaultPort = "443";
+			else
+				defaultPort = "80";
+			
+			url = url.substring(n+3); 
+		}
+		
+		n = url.indexOf(":");
+		if(n != -1) {
+			ip = url.substring(0, n);
+			port = url.substring(n+1);
+		} else {
+			ip = url;
+			port = defaultPort;
+		}
+		
+		if(!ip.trim().equals("")) {
+			Map<String, String> map = new HashMap<String, String>();
+			map.put("ip", ip);
+			map.put("port", port);
+			return map;
+		} else {
+			return null;
+		}
+	}
+}

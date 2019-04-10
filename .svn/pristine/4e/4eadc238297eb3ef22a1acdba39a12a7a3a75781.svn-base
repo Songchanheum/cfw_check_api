@@ -1,0 +1,182 @@
+/*
+* Interactive Timeslice version 1.0
+*
+*  Copyright ⓒ 2017 kt corp. All rights reserved.
+*
+*  This is a proprietary software of kt corp, and you may not use this file except in
+*  compliance with license agreement with kt corp. Any redistribution or use of this
+*  software, with or without modification shall be strictly prohibited without prior written
+*  approval of kt corp, and the copyright notice above does not evidence any actual or
+*  intended publication of such software.
+*/
+
+package com.kt.its.api.common;
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+/** 
+ * <pre>
+ * 설명         : Http 연동 Utility 클래스
+ * 작성일       : 2017.02.08
+ * 작성자       : yccho
+ * 변경 이력    :
+ * </pre>
+ */
+@SuppressWarnings("PMD")
+public class HttpClient {
+	public static final Logger logger = LoggerFactory.getLogger(HttpClient.class);
+	
+	/**
+	 * URLConnection
+	 * @param ip
+	 * @param port
+	 * @param path
+	 * @param params
+	 * @param connTimeout
+	 * @param readTimeout
+	 * @return
+	 */
+	public static String call(String svrUrl, String params, int connTimeout, int readTimeout, boolean isLog) {
+		URL url = null;
+        HttpURLConnection urlConn = null;
+
+        InputStream inputStream = null;
+		InputStreamReader inputStreamReader = null;
+		BufferedReader bufferedReader = null;
+
+		StringBuffer htmlContents = new StringBuffer();
+
+        try {
+            url = new URL(svrUrl);
+            if(isLog)
+            	logger.info("Call Url: " + url.toString());
+            
+            urlConn = (HttpURLConnection)url.openConnection();
+            urlConn.setDoInput(true);
+            urlConn.setConnectTimeout(connTimeout);
+            urlConn.setReadTimeout(readTimeout);
+            urlConn.setDoOutput(true);
+            urlConn.setUseCaches(false);
+            urlConn.setDefaultUseCaches(false);
+            //urlConn.setRequestMethod("POST");
+            urlConn.setRequestProperty("content-type", "application/json;charset=utf-8");
+            
+            if(params != null && !params.trim().equals("")) {
+            	if(isLog)
+            		logger.info("Parameter: " + params);
+	            
+	            OutputStreamWriter outStreamWriter = null;
+	            outStreamWriter = new OutputStreamWriter(urlConn.getOutputStream(), "UTF-8");
+	            outStreamWriter.write(params);
+	            outStreamWriter.flush();
+	            outStreamWriter.close();
+            }
+            
+            String output = "";
+            inputStream = urlConn.getInputStream();
+			inputStreamReader = new InputStreamReader(inputStream, "UTF-8");
+			bufferedReader = new BufferedReader(inputStreamReader);
+			int i = 0;
+			
+			while((output = bufferedReader.readLine()) != null) {
+				if(++i > 1) htmlContents.append("\n");
+				htmlContents.append(output); 
+			}
+			
+			if(isLog)
+				logger.debug("Return value -> " + htmlContents.toString());
+			
+			if (urlConn.getResponseCode() >= HttpURLConnection.HTTP_BAD_REQUEST)
+				throw new Exception(Integer.toString(urlConn.getResponseCode()));
+
+	        return htmlContents.toString();
+
+        } catch(Exception ex) {
+        	if(isLog)
+        		//ex.printStackTrace();
+        		logger.warn("HttpClient.call: " + ex.getMessage());
+        	return null;
+		} finally {
+			try {
+				if(inputStream != null) inputStream.close();
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
+			try {
+				if(inputStreamReader != null) inputStreamReader.close();
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
+			try {
+				if(bufferedReader != null) bufferedReader.close();
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
+			if(urlConn != null) urlConn.disconnect();
+			url = null;
+		}
+	}
+	
+	public static String call(String svrUrl) throws UnsupportedEncodingException {
+		return call(svrUrl, null, Resource.CONNECT_TIMEOUT, Resource.READ_TIMEOUT, true);
+	}
+	
+	public static String call(String svrUrl, boolean isLog) throws UnsupportedEncodingException {
+		return call(svrUrl, null, Resource.CONNECT_TIMEOUT, Resource.READ_TIMEOUT, isLog);
+	}
+	
+	public static String call(String svrUrl, String params) throws UnsupportedEncodingException {
+		return call(svrUrl, params, Resource.CONNECT_TIMEOUT, Resource.READ_TIMEOUT, true);
+	}
+	
+	/**
+	 * 
+	 * @param url
+	 * @param params
+	 * @param connTimeout
+	 * @param readTimeout
+	 * @return
+	 * @throws UnsupportedEncodingException
+	 */
+	public static String call(String svrUrl, Map<String, Object> params) throws UnsupportedEncodingException {
+		String paramsStr = getParamsString(params);
+		
+		if(paramsStr == null)
+			return null;
+		else
+			return call(svrUrl, paramsStr, Resource.CONNECT_TIMEOUT, Resource.READ_TIMEOUT, true);
+	}
+	
+	
+	/**
+	 * 
+	 * @param params
+	 * @return
+	 */
+	private static String getParamsString(Map<String, Object> params) {
+		ObjectMapper mapper = new ObjectMapper();
+		String paramsStr = null;
+		
+		try {
+			paramsStr = mapper.writeValueAsString(params);
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+		}
+		
+		return paramsStr;		
+	}
+
+}

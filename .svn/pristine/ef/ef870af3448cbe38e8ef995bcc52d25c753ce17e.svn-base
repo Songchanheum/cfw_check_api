@@ -1,0 +1,126 @@
+/*
+* Interactive Timeslice version 1.0
+*
+*  Copyright ⓒ 2017 kt corp. All rights reserved.
+*
+*  This is a proprietary software of kt corp, and you may not use this file except in
+*  compliance with license agreement with kt corp. Any redistribution or use of this
+*  software, with or without modification shall be strictly prohibited without prior written
+*  approval of kt corp, and the copyright notice above does not evidence any actual or
+*  intended publication of such software.
+*/
+package com.kt.its.api.model;
+
+import org.springframework.stereotype.Component;
+
+/** 
+ * <pre>
+ * 설명		: 서버 세팅 정보 Bean
+ * 작성일 	: 2017.02.08
+ * 작성자 	: yccho
+ * 변경 이력 	:
+ * </pre>
+ */
+@Component
+public class ServerSettingBean {
+
+	private long settingSeq;			
+	private String nasPublicFolder;			
+//	private String captureUrl;	
+	private String hlsUrl;	
+	
+//	private String liveUrl;
+//	private String replayUrl;
+//	private String timesliceUrl;
+	
+	private String runYn;
+	private String capPublicFolder;
+	
+	public String getRunYn() {
+		return runYn;
+	}
+
+	public void setRunYn(String runYn) {
+		this.runYn = runYn;
+	}
+
+	public String getCapPublicFolder() {
+		return capPublicFolder;
+	}
+
+	public void setCapPublicFolder(String capPublicFolder) {
+		this.capPublicFolder = capPublicFolder;
+	}
+
+	public long getSettingSeq() {
+		return settingSeq;
+	}
+
+	public void setSettingSeq(long settingSeq) {
+		this.settingSeq = settingSeq;
+	}
+
+	public String getNasPublicFolder() {
+		return nasPublicFolder;
+	}
+
+	public void setNasPublicFolder(String nasPublicFolder) {
+		this.nasPublicFolder = nasPublicFolder;
+	}
+
+//	public String getCaptureUrl() {
+//		return captureUrl;
+//	}
+//
+//	public void setCaptureUrl(String captureUrl) {
+//		this.captureUrl = captureUrl;
+//	}
+
+	public String getHlsUrl() {
+		return hlsUrl;
+	}
+
+	public void setHlsUrl(String hlsUrl) {
+		this.hlsUrl = hlsUrl;
+	}
+
+//	public String getLiveUrl() {
+//		return liveUrl;
+//	}
+//
+//	public void setLiveUrl(String liveUrl) {
+//		this.liveUrl = liveUrl;
+//	}
+//
+//	public String getReplayUrl() {
+//		return replayUrl;
+//	}
+//
+//	public void setReplayUrl(String replayUrl) {
+//		this.replayUrl = replayUrl;
+//	}
+//
+//	public String getTimesliceUrl() {
+//		return timesliceUrl;
+//	}
+//
+//	public void setTimesliceUrl(String timesliceUrl) {
+//		this.timesliceUrl = timesliceUrl;
+//	}
+	
+	public String toString() {
+		StringBuffer sb = new StringBuffer()
+				.append("{")
+				.append("\"settingSeq\":\"" + settingSeq + "\"")
+				.append(", \"nasPublicFolder\":\"" + nasPublicFolder + "\"")
+//				.append(", \"captureUrl\":\"" + captureUrl + "\"")
+				.append(", \"hlsUrl\":\"" + hlsUrl + "\"")
+//				.append(", \"liveUrl\":\"" + liveUrl + "\"")
+//				.append(", \"replayUrl\":\"" + replayUrl + "\"")
+//				.append(", \"timesliceUrl\":\"" + timesliceUrl + "\"")
+				.append(", \"runYn\":\"" + runYn + "\"")
+				.append(", \"capPublicFolder\":\"" + capPublicFolder + "\"")
+				.append("}");
+		return sb.toString();
+	}
+}

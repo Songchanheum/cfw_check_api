@@ -1,0 +1,81 @@
+/*
+* Interactive Timeslice version 1.0
+*
+*  Copyright ⓒ 2017 kt corp. All rights reserved.
+*
+*  This is a proprietary software of kt corp, and you may not use this file except in
+*  compliance with license agreement with kt corp. Any redistribution or use of this
+*  software, with or without modification shall be strictly prohibited without prior written
+*  approval of kt corp, and the copyright notice above does not evidence any actual or
+*  intended publication of such software.
+*/
+package com.kt.its.api.service;
+
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.stereotype.Service;
+
+/** 
+ * <pre>
+ * 설명		: 경기 정보 Service Interface
+ * 작성일 	: 2017.02.08
+ * 작성자 	: yccho
+ * 변경 이력 	:
+ * </pre>
+ */
+@Service
+public interface GameService {
+	
+	/**
+	 * 진행중인 경기 정보(메인화면용)
+	 * @param param
+	 * @return
+	 */
+	Map<String, Object> selectCurrentGameInfo(Map<String, Object> param);
+	
+	/**
+	 * 경기 일정(날짜) 조회
+	 * @param param
+	 * @return
+	 */
+	List<String> selectGameDateList(Map<String, Object> param);
+
+	/**
+	 * 일 별 경기 일정 조회
+	 * @param param
+	 * @return
+	 */
+	List<Map<String, Object>> selectGameScheduleList(Map<String, Object> param);
+
+	
+	/**
+	 * 현재 라이브 중계 정보 조회
+	 * @param param
+	 * @return
+	 */
+	Map<String, Object> selectOnAirInfo(Map<String, Object> param);
+
+
+	/**
+	 * 메인화면 노출용 경기목록조회
+	 * @param param
+	 * @return
+	 */
+	List<Map<String, Object>> selectDeleGameList(Map<String, Object> param);
+	
+	/**
+	 * 메인화면 노출용 타임슬라이스목록조회
+	 * @param param
+	 * @return
+	 */
+	List<Map<String, Object>> selectDeleTimesliceList(Map<String, Object> param);
+
+	
+	/**
+	 * 대회별 경기목록조회
+	 * @param param
+	 * @return
+	 */
+	List<Map<String, Object>> selectCompGameList(Map<String, Object> param);
+}

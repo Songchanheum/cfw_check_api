@@ -1,0 +1,107 @@
+/*
+* Interactive Timeslice version 1.0
+*
+*  Copyright ⓒ 2017 kt corp. All rights reserved.
+*
+*  This is a proprietary software of kt corp, and you may not use this file except in
+*  compliance with license agreement with kt corp. Any redistribution or use of this
+*  software, with or without modification shall be strictly prohibited without prior written
+*  approval of kt corp, and the copyright notice above does not evidence any actual or
+*  intended publication of such software.
+*/
+
+package com.kt.its.api.common;
+
+import java.util.ArrayList;
+
+import com.kt.its.api.model.ServerInfoBean;
+import com.kt.its.api.model.ServerSettingBean;
+
+/**
+ * <pre>
+ * 설명		: 공통 Resource 클래스
+ * 작성일 	: 2016.02.08
+ * 작성자 	: yccho
+ * 변경 이력 	:
+ * </pre>
+ */
+@SuppressWarnings("PMD")
+public class Resource {
+
+	/**
+	 * TIME OUT 설정값
+	 */
+	public static int CONNECT_TIMEOUT;
+	public static int READ_TIMEOUT;
+
+	/**
+	 * RESOURCE FILE DIR
+	 */
+	public static String MULTIVIEW_DIR;
+	public static String REPLAY_DIR;
+	public static String TIMESLICE_DIR;
+	public static String LIVE_DIR;
+	public static String COMP_DIR;
+	
+	/**
+	 * SERVER URL
+	 */
+	public static String RESOURCE_SERVER_URL;
+	public static String TRACKING_SERVER_URL;
+	public static String CAPTURE_SERVER_URL;
+	public static String GET_TRACKING_API_URL;
+	
+	/**
+	 * VOD 파일명(playlist.m3u8), VOD 확장자(mp4)
+	 */
+	public static String VOD_FILE_NAME;
+	public static String VOD_FILE_EXT;
+
+	/**
+	 * 각 서버의 Context Root 경로
+	 */
+	public static String ENCODER_SERVER_PATH;
+	public static String MUXER_SERVER_PATH;
+	public static String CAPTURE_SERVER_PATH;
+	
+	/**
+	 * 모니터링 시 반복 접속 주기(초)
+	 */
+	public static int MONITORING_REPEAT_SEC;
+	
+	/*
+	 * 서버 종류 
+	 */
+	public static final String SERVER_TYPE_CMS = "CMS";
+	public static final String SERVER_TYPE_CAPTURE = "CAP";
+	public static final String SERVER_TYPE_API = "API";
+	public static final String SERVER_TYPE_MUXER = "MUX";
+	public static final String SERVER_TYPE_ENCODER = "ENC";
+	
+	/*
+	 * 서버 정보
+	 */
+	//public static ArrayList<ServerInfoBean> SERVER_INFO_ALL_LIST = new ArrayList<ServerInfoBean>();
+	public static ServerInfoBean SERVER_INFO_CMS;
+	public static ServerInfoBean SERVER_INFO_CAPTURE;
+	public static ServerInfoBean SERVER_INFO_API;
+	public static ServerInfoBean SERVER_INFO_MUXER;
+	public static ArrayList<ServerInfoBean> SERVER_INFO_ENCODER = new ArrayList<ServerInfoBean>();
+	public static ArrayList<ServerInfoBean> SERVER_INFO_ALL = new ArrayList<ServerInfoBean>();
+	
+	/*
+	 * 서버 세팅 정보
+	 */
+	public static ServerSettingBean SERVER_SETTING;
+
+	/*
+	 * 동작 상태 코드
+	 */
+	public static final String STATE_READY = "0";
+	public static final String STATE_START = "1";
+	public static final String STATE_STOP = "2";
+	public static final String STATE_ERROR = "9";
+	
+	public static boolean IS_MONITORING = false;
+	
+}

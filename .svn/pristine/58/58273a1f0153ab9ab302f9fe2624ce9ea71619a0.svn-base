@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+   Interactive Timeslice version 1.0
+  
+   Copyright ⓒ 2017 kt corp. All rights reserved.
+   
+   This is a proprietary software of kt corp, and you may not use this file except in 
+   compliance with license agreement with kt corp. Any redistribution or use of this 
+   software, with or without modification shall be strictly prohibited without prior written 
+   approval of kt corp, and the copyright notice above does not evidence any actual or 
+   intended publication of such software. 
+ -->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kt.its.api.data.ReplayScheMapper">
+
+	<!-- 리플레이 영상 목록 조회 -->
+	<select id="selectReplayVodList" resultType="map" parameterType="map">
+		SELECT r.sche_id "scheId", r.vod_id "vodId"
+			, v.vod_title "vodTitle", v.dele_img "deleImg" 
+			, r.dele_video_ord "deleVideoOrd", r.dele_video_yn "deleVideoYn" 
+			, r.game_id "gameId"			
+			, r.ins_id "insId", to_char(r.ins_dt, 'yyyymmddhh24miss') "insDt"
+			, v.file_path "filePath", nvl(v.duration, '0') "duration"
+			, m.tracking_yn "trackingYn", v.multiview_id "multiviewId"
+		FROM tb_replay_sche r, tb_vod v, tb_multiview m 
+		WHERE r.vod_id = v.vod_id
+		AND m.multiview_id = v.multiview_id
+		AND v.use_yn = 'Y'
+		<if test="gameId != null and gameId != ''">
+			AND r.game_id = #{gameId}
+		</if>
+		<choose>
+		<when test='deleVideoYn != null and "Y".equals(deleVideoYn)'>
+			<!-- AND r.dele_video_yn = 'Y' -->
+			ORDER BY to_number(r.dele_video_ord), v.vod_id, r.sche_id
+			LIMIT 2
+		</when>
+		<otherwise>
+			ORDER BY to_number(r.dele_video_ord), v.vod_id, r.sche_id
+		</otherwise>
+		</choose>
+		;
+	</select>
+
+	<select id="selectReplayVodCount" resultType="int" parameterType="map">
+		SELECT count(1) cnt
+		FROM tb_replay_sche r, tb_vod v
+		WHERE r.vod_id = v.vod_id
+		AND v.use_yn = 'Y'
+		<if test="gameId != null and gameId != ''">
+			AND r.game_id = #{gameId}
+		</if>
+		;
+	</select>
+</mapper>

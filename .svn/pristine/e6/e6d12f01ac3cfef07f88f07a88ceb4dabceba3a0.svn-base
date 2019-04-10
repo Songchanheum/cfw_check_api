@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+   Interactive Timeslice version 1.0
+  
+   Copyright ⓒ 2017 kt corp. All rights reserved.
+   
+   This is a proprietary software of kt corp, and you may not use this file except in 
+   compliance with license agreement with kt corp. Any redistribution or use of this 
+   software, with or without modification shall be strictly prohibited without prior written 
+   approval of kt corp, and the copyright notice above does not evidence any actual or 
+   intended publication of such software. 
+ -->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kt.its.api.data.TimesliceScheMapper">
+
+	<!-- 타임슬라이스 영상 목록 조회 -->
+	<select id="selectTimesliceVodList" resultType="map" parameterType="map">
+		SELECT t.sche_id "scheId", t.timeslice_id "timesliceId"
+			, v.timeslice_title "timesliceTitle", v.dele_img "deleImg" 
+			<!-- , t.game_id "gameId" -->
+			, t.category_id "categoryId", c.category_name "categoryName"
+			, t.dele_video_yn "deleVideoYn", t.dele_video_ord "deleVideoOrd" 
+			, t.result_video_yn "resultVideoYn", t.result_video_ord "resultVideoOrd"
+			, t.ins_id "insId", to_char(t.ins_dt, 'yyyymmddhh24miss') "insDt"
+			, v.file_path "filePath", nvl(v.duration, '0') "duration"
+		FROM tb_timeslice_sche t, tb_timeslice v, tb_timeslice_category c
+		WHERE t.timeslice_id = v.timeslice_id
+		AND v.use_yn = 'Y'
+		<!-- <if test="gameId != null and gameId != ''">
+			AND t.game_id = #{gameId}
+		</if> -->
+		<if test="categoryId != null and categoryId != ''">
+			AND t.category_id = #{categoryId}
+		</if>		
+		AND t.category_id = c.category_id
+		AND c.use_yn = 'Y'
+		<choose>
+		<when test='deleVideoYn != null and "Y".equals(deleVideoYn)'>
+			<!-- AND t.dele_video_yn = 'Y' -->
+			ORDER BY to_number(t.dele_video_ord), t.timeslice_id, t.sche_id
+			LIMIT 3
+		</when>
+		<when test='resultVideoYn != null and "Y".equals(resultVideoYn)'>
+			AND t.result_video_yn = 'Y'
+			ORDER BY to_number(t.result_video_ord), t.timeslice_id, t.sche_id
+		</when>
+		<otherwise>
+			ORDER BY to_number(t.dele_video_ord), t.timeslice_id, t.sche_id
+		</otherwise>
+		</choose>
+		;
+	</select>
+
+	<select id="selectTimesliceVodCount" resultType="int" parameterType="map">
+		SELECT count(1) cnt
+		FROM tb_timeslice_sche t, tb_timeslice v, tb_timeslice_category c
+		WHERE t.timeslice_id = v.timeslice_id
+		AND v.use_yn = 'Y'
+		<!-- <if test="gameId != null and gameId != ''">
+			AND t.game_id = #{gameId}
+		</if> -->
+		<if test="categoryId != null and categoryId != ''">
+			AND t.category_id = #{categoryId}
+		</if>		
+		AND t.category_id = c.category_id
+		AND c.use_yn = 'Y'
+		;
+	</select>
+
+	<!-- 카테고리 목록 조회 -->
+	<select id="selectTimesliceCategory" resultType="map" parameterType="map">
+		SELECT category_id "categoryId", category_name "categoryName"
+			, exposure_ord "exposureOrd", detail "detail", use_yn "useYn"
+			
+		FROM tb_timeslice_category
+		WHERE use_yn = 'Y'
+		<if test="compId != null and compId != ''">
+			AND comp_id = #{compId}
+		</if>		
+		<choose>
+		<when test='deleVideoYn != null and "Y".equals(deleVideoYn)'> <!-- 메인화면 영상목록 노출용 -->
+			AND main_exposure_yn = 'Y'
+			ORDER BY to_number(exposure_ord), category_id		
+			LIMIT 2
+		</when>
+		<otherwise>
+			ORDER BY to_number(exposure_ord), category_id		
+		</otherwise>
+		</choose>
+		;
+	</select>
+
+</mapper>

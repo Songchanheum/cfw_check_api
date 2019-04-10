@@ -1,0 +1,48 @@
+/*
+* Interactive Timeslice version 1.0
+*
+*  Copyright ⓒ 2017 kt corp. All rights reserved.
+*
+*  This is a proprietary software of kt corp, and you may not use this file except in
+*  compliance with license agreement with kt corp. Any redistribution or use of this
+*  software, with or without modification shall be strictly prohibited without prior written
+*  approval of kt corp, and the copyright notice above does not evidence any actual or
+*  intended publication of such software.
+*/
+package com.kt.its.api.data;
+
+import java.util.List;
+import java.util.Map;
+
+/** 
+ * <pre>
+ * 설명		: 영상 정보 Mapper
+ * 작성일 	: 2017.02.08
+ * 작성자 	: yccho
+ * 변경 이력 	:
+ * </pre>
+ */
+public interface VodMapper {
+
+	/**
+	 * VOD 목록조회
+	 * @param param
+	 * @return
+	 */
+	List<Map<String, Object>> selectVodList(Map<String, Object> param);
+	
+	/**
+	 * VOD 정보조회
+	 * @param vodId
+	 * @return
+	 */
+	Map<String, Object> selectVodInfo(String vodId);
+	
+	
+	/**
+	 * 메인화면 라이브 대체영상
+	 * @param vodId
+	 * @return
+	 */
+	Map<String, Object> selectSubstLiveVodInfo();
+}

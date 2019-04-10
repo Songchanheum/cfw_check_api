@@ -1,0 +1,78 @@
+/*
+* Interactive Timeslice version 1.0
+*
+*  Copyright ⓒ 2017 kt corp. All rights reserved.
+*
+*  This is a proprietary software of kt corp, and you may not use this file except in
+*  compliance with license agreement with kt corp. Any redistribution or use of this
+*  software, with or without modification shall be strictly prohibited without prior written
+*  approval of kt corp, and the copyright notice above does not evidence any actual or
+*  intended publication of such software.
+*/
+package com.kt.its.api.model;
+
+import org.springframework.stereotype.Component;
+
+import com.kt.its.api.common.Resource;
+import com.netflix.loadbalancer.Server;
+
+/** 
+ * <pre>
+ * 설명		: 서버정보 Bean
+ * 작성일 	: 2017.02.08
+ * 작성자 	: yccho
+ * 변경 이력 	:
+ * </pre>
+ */
+@SuppressWarnings("PMD")
+@Component
+public class ServerInfoBean {
+	private String serverId;
+	private String serverType;
+	private String serverIp;
+	private String serverState = Resource.STATE_STOP;
+	
+	public String getServerId() {
+		return serverId;
+	}
+	public void setServerId(String serverId) {
+		this.serverId = serverId;
+	}
+	public String getServerType() {
+		return serverType;
+	}
+	public void setServerType(String serverType) {
+		this.serverType = serverType;
+	}
+	public String getServerIp() {
+		return serverIp;
+	}
+	public void setServerIp(String serverIp) {
+		this.serverIp = serverIp;
+	}
+	public String getServerState() {
+		return serverState;
+	}
+	public void setServerState(String serverState) {
+		this.serverState = serverState;
+	}
+	
+	public String toString() {
+		StringBuffer sb = new StringBuffer()
+				.append("{")
+				.append("\"serverType\":\"" + serverType + "\"")
+				.append(", \"serverId\":\"" + serverId + "\"")
+				.append(", \"serverIp\":\"" + serverIp + "\"")
+				.append(", \"serverState\":\"" + serverState + "\"")
+				.append("}");
+		return sb.toString();
+	}
+	
+	private Server server;
+	public void setServer(Server server) {
+		this.server = server;
+	}
+	public Server getServer() {
+		return server;
+	}
+}

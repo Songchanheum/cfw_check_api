@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+   Interactive Timeslice version 1.0
+  
+   Copyright ⓒ 2017 kt corp. All rights reserved.
+   
+   This is a proprietary software of kt corp, and you may not use this file except in 
+   compliance with license agreement with kt corp. Any redistribution or use of this 
+   software, with or without modification shall be strictly prohibited without prior written 
+   approval of kt corp, and the copyright notice above does not evidence any actual or 
+   intended publication of such software. 
+ -->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kt.its.api.data.DeleScheListMapper">
+	
+	<!-- 대표 영상 목록 조회 -->
+	<select id="selectDeleScheList" resultType="map" parameterType="string">
+		SELECT ds.dele_sche_id "deleScheId", ds.sche_id "scheId"
+			, ds.timeslice_id "timesliceId", ds.sche_ord "scheOrd"
+			, ts.resolution "resolution", ts.dele_img "deleImg"
+			, ts.file_path "filePath", ts.intro "intro"
+			, ts.game_id "gameId", timeslice_title "timesliceTitle"
+			, game.game_nm "gameNm"
+		FROM tb_dele_sche_list ds, tb_timeslice ts 
+			LEFT JOIN tb_game game ON ts.game_id = game.game_id
+		WHERE ds.sche_id = #{scheId}
+		AND ts.use_yn = 'Y'
+		AND ds.timeslice_id = ts.timeslice_id
+		ORDER BY ds.dele_sche_id
+		LIMIT 3
+		;
+	</select>
+</mapper>

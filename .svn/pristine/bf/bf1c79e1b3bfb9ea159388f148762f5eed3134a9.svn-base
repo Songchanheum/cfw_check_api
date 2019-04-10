@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+   Interactive Timeslice version 1.0
+  
+   Copyright ⓒ 2017 kt corp. All rights reserved.
+   
+   This is a proprietary software of kt corp, and you may not use this file except in 
+   compliance with license agreement with kt corp. Any redistribution or use of this 
+   software, with or without modification shall be strictly prohibited without prior written 
+   approval of kt corp, and the copyright notice above does not evidence any actual or 
+   intended publication of such software. 
+ -->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kt.its.api.data.LogMapper">
+	<!-- 이용로그 누적 -->
+	<insert id="insertLog"  parameterType="map">
+		INSERT INTO tb_log (
+			log_seq, device_id, access_path_id, video_type, video_id, ins_dt
+	    )
+	    VALUES (
+	    	seq_log.nextVal, #{deviceId}, #{accessPathId}, #{videoType}, #{videoId}, sysdate
+		);	
+	</insert>
+</mapper>

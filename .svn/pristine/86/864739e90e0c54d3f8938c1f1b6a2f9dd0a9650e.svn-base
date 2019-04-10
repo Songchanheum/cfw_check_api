@@ -1,0 +1,98 @@
+/*
+* Interactive Timeslice version 1.0
+*
+*  Copyright ⓒ 2017 kt corp. All rights reserved.
+*
+*  This is a proprietary software of kt corp, and you may not use this file except in
+*  compliance with license agreement with kt corp. Any redistribution or use of this
+*  software, with or without modification shall be strictly prohibited without prior written
+*  approval of kt corp, and the copyright notice above does not evidence any actual or
+*  intended publication of such software.
+*/
+package com.kt.its.api.service;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
+import com.kt.its.api.common.CommonUtil;
+import com.kt.its.api.data.ReplayScheMapper;
+
+/** 
+ * <pre>
+ * 설명		: 리플레이 영상 편성 정보 Service 구현
+ * 작성일 	: 2017.02.08
+ * 작성자 	: yccho
+ * 변경 이력 	:
+ * </pre>
+ */
+@Repository
+public class ReplayScheServiceImpl implements ReplayScheService {
+
+	private final Logger logger = LoggerFactory.getLogger(getClass());
+	
+	@Autowired 
+	ReplayScheMapper replayScheMapper;
+	
+	/**
+	 * 리플레이 영상 목록 조회
+	 */
+	@Override
+	public List<Map<String, Object>> selectReplayVodList(Map<String, Object> param) {
+		logger.info("selectReplayVodList param >>> "+ param);
+
+		List<Map<String, Object>> resultList = new ArrayList<Map<String, Object>>();
+		
+		try {
+			List<Map<String, Object>> list = replayScheMapper.selectReplayVodList(param);
+			
+			if(list != null && list.size() > 0) {
+				for(Map<String, Object> m : list) {
+					Map<String, Object> resultMap = new HashMap<String, Object>();
+
+					resultMap.put("vodId", m.get("vodId"));
+					resultMap.put("vodTitle", m.get("vodTitle"));
+					resultMap.put("thumbUrl", CommonUtil.getReplayUrl((String)m.get("vodId"), (String)m.get("deleImg")));
+					resultMap.put("vodUrl", CommonUtil.getReplayUrl((String)m.get("vodId")));
+					resultMap.put("vodTrackYn", m.get("trackingYn"));
+					resultMap.put("duration", m.get("duration"));
+					resultMap.put("pVodId", m.get("multiviewId"));
+					
+					resultList.add(resultMap);
+				}
+			}				
+			
+		} catch (Exception e) {
+			throw new ServiceException(e.getMessage(), e.getCause());
+		}
+			
+		logger.info("selectReplayVodList result::" + resultList);
+		
+		return resultList;
+	}
+
+	@Override
+	public int selectReplayVodCount(Map<String, Object> param) {
+		logger.info("selectReplayVodCount param::"+ param);
+
+		int resultCount = 0;
+		
+		try {
+			resultCount = replayScheMapper.selectReplayVodCount(param);
+		} catch (Exception e) {
+			throw new ServiceException(e.getMessage(), e.getCause());
+		}
+			
+		logger.info("selectReplayVodCount result >>> " + resultCount);
+		
+		return resultCount;
+	}
+
+
+}

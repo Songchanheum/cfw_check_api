@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kakao.check.data.CheckMapper">
+	<resultMap type="com.kakao.check.model.CheckInfo" id="CheckInfo">
+		<id column ="chid" 			jdbcType="VARCHAR" 		property="chid"/>
+		<result column="cid"		jdbcType="VARCHAR"		property="cid"/>
+		<result column="uid"			jdbcType="VARCHAR"		property="uid"/>
+		<result column="goonYn"	jdbcType="VARCHAR"		property="goonYn"/>
+		<result column="offYn"		jdbcType="VARCHAR"		property="offYn"/>
+		<result column="date"		jdbcType="DATE"		property="date"/>
+		<result column="goonTime"		jdbcType="TIME"		property="goonTime"/>
+		<result column="offTime"		jdbcType="TIME"		property="offTime"/>
+	</resultMap>
+	
+	<select id="getCheckInfo" resultMap="CheckInfo" parameterType="String">
+	SELECT T.*
+	FROM(
+		SELECT chid chid, cid cid, uid uid, goonYn goonYn, offYn offYn, date date, 
+		goonTime goonTime, offTime offTime
+		FROM check c
+		WHERE chid is not null
+		<if test = "userId != null and userId != ''">
+			AND c.uid = (SELECT u.uid FROM user u WHERE u.email = #{userId})
+		</if>
+	) T
+	</select>
+	
+</mapper>

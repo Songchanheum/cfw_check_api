@@ -1,0 +1,94 @@
+/*
+* Interactive Timeslice version 1.0
+*
+*  Copyright ⓒ 2017 kt corp. All rights reserved.
+*
+*  This is a proprietary software of kt corp, and you may not use this file except in
+*  compliance with license agreement with kt corp. Any redistribution or use of this
+*  software, with or without modification shall be strictly prohibited without prior written
+*  approval of kt corp, and the copyright notice above does not evidence any actual or
+*  intended publication of such software.
+*/
+package com.kt.its.api.service;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
+import com.kt.its.api.common.CommonUtil;
+import com.kt.its.api.data.DeleScheListMapper;
+import com.kt.its.api.data.DeleScheMapper;
+
+/** 
+ * <pre>
+ * 설명		: 대표영상 정보 Service 구현
+ * 작성일 	: 2017.02.08
+ * 작성자 	: yccho
+ * 변경 이력 	:
+ * </pre>
+ */
+@Repository
+public class DeleScheServiceImpl implements DeleScheService {
+	private final Logger logger = LoggerFactory.getLogger(getClass());
+
+	@Autowired
+	DeleScheMapper deleScheMapper;
+	
+	@Autowired
+	DeleScheListMapper deleScheListMapper;
+	
+	/**
+	 * 대표영상 목록 조회
+	 */
+	@Override
+	public List<Map<String, Object>> selectDeleScheList(Map<String, Object> param) {
+		logger.info("selectDeleScheList param::"+ param);
+
+		List<Map<String, Object>> resultList = new ArrayList<Map<String, Object>>();
+		
+		try {
+			Map<String, Object> infoMap = deleScheMapper.selectDeleScheInfo(param);
+			if(infoMap == null) {
+				Map<String, Object> hm = new HashMap<String, Object>();
+				if(param.get("compId")!=null)
+					hm.put("compId", param.get("compId"));
+				hm.put("noLimit", "Y");
+				infoMap = deleScheMapper.selectDeleScheInfo(hm);
+			}
+			
+			if(infoMap != null) {
+				String scheId = String.valueOf(infoMap.get("scheId"));
+				
+				if(scheId != null) {
+					List<Map<String, Object>> list = deleScheListMapper.selectDeleScheList(scheId);
+					
+					if(list != null && list.size() > 0) {
+						for(Map<String, Object> m : list) {
+							Map<String, Object> resultMap = new HashMap<String, Object>();
+		
+							resultMap.put("gameNm", m.get("gameNm"));
+							resultMap.put("vodId", m.get("timesliceId"));
+							resultMap.put("vodTitle", m.get("timesliceTitle"));
+							resultMap.put("vodUrl", CommonUtil.getTimesliceUrl((String)m.get("timesliceId")));
+							
+							resultList.add(resultMap);
+						}
+					}
+				}
+			}
+		} catch (Exception e) {
+			throw new ServiceException(e.getMessage(), e.getCause());
+		}
+			
+		logger.info("selectDeleScheList result::" + resultList);
+
+		return resultList;
+	}
+
+}

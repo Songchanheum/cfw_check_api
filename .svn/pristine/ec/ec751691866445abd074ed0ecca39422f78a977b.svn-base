@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+   Interactive Timeslice version 1.0
+  
+   Copyright ⓒ 2017 kt corp. All rights reserved.
+   
+   This is a proprietary software of kt corp, and you may not use this file except in 
+   compliance with license agreement with kt corp. Any redistribution or use of this 
+   software, with or without modification shall be strictly prohibited without prior written 
+   approval of kt corp, and the copyright notice above does not evidence any actual or 
+   intended publication of such software. 
+ -->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kt.its.api.data.ServerMapper">
+
+	<select id="selectServerList" resultType="com.kt.its.api.model.ServerInfoBean">
+		SELECT server_id "serverId", server_type "serverType"			
+			, server_ip "serverIp", server_state "serverState"
+		FROM  tb_server 
+		ORDER BY server_id, server_type, server_ip
+		;
+	</select>
+
+	<update id="updateServerState" parameterType="com.kt.its.api.model.ServerInfoBean">
+		UPDATE tb_server
+		SET server_state = #{serverState}
+		WHERE server_id = #{serverId}
+		;
+	</update>
+
+	<update id="updateAllServerState" parameterType="string">
+		UPDATE tb_server
+		SET server_state = #{serverState}
+		;
+	</update>
+
+</mapper>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+   Interactive Timeslice version 1.0
+  
+   Copyright ⓒ 2017 kt corp. All rights reserved.
+   
+   This is a proprietary software of kt corp, and you may not use this file except in 
+   compliance with license agreement with kt corp. Any redistribution or use of this 
+   software, with or without modification shall be strictly prohibited without prior written 
+   approval of kt corp, and the copyright notice above does not evidence any actual or 
+   intended publication of such software. 
+ -->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kt.its.api.data.LiveSettingMultiviewMapMapper">
+
+	<!-- 라이브설정 영상맵 정보를 라이브설정 정보를 이용하여 등록 -->
+	<insert id="insertLiveSettingMultiviewMapFromLiveSetting" parameterType="map">
+		INSERT INTO tb_live_setting_multiview_map (
+			multiview_id
+			, key_frame, preset, dele_voice_file 
+			, bitrate, qmax, qmin, codec
+		) 
+		SELECT #{multiviewId} "multiview_id"
+			, key_frame, preset, dele_voice_file			
+			, bitrate, qmax, qmin, codec
+		FROM tb_live_setting
+		;
+	</insert>
+	
+</mapper>

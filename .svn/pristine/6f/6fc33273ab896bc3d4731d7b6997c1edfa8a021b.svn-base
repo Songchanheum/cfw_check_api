@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+   Interactive Timeslice version 1.0
+  
+   Copyright ⓒ 2017 kt corp. All rights reserved.
+   
+   This is a proprietary software of kt corp, and you may not use this file except in 
+   compliance with license agreement with kt corp. Any redistribution or use of this 
+   software, with or without modification shall be strictly prohibited without prior written 
+   approval of kt corp, and the copyright notice above does not evidence any actual or 
+   intended publication of such software. 
+ -->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kt.its.api.data.GuideMapper">
+
+	<select id="selectGuideList" resultType="map">
+		SELECT guide_id "guideId", img_url "imgUrl", title "title"
+			, page_ord "pageOrd", use_yn "useYn"
+			, ins_id "insId", to_char(ins_dt, 'yyyymmddhh24miss') "insDt"
+			, upd_id "updId", to_char(upd_dt, 'yyyymmddhh24miss') "updDt"
+		FROM  tb_guide 
+		WHERE use_yn = 'Y'
+		ORDER BY page_ord, guide_id
+		;
+	</select>
+
+</mapper>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+   Interactive Timeslice version 1.0
+  
+   Copyright ⓒ 2017 kt corp. All rights reserved.
+   
+   This is a proprietary software of kt corp, and you may not use this file except in 
+   compliance with license agreement with kt corp. Any redistribution or use of this 
+   software, with or without modification shall be strictly prohibited without prior written 
+   approval of kt corp, and the copyright notice above does not evidence any actual or 
+   intended publication of such software. 
+ -->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kt.its.api.data.VodMapper">
+
+	<sql id="sqlSelectVod">
+		SELECT v.vod_id "vodId", v.multiview_id "multiviewId"
+			, v.vod_title "vodTitle", v.dele_img "deleImg"			
+			, v.file_path "filePath", v.resolution "resolution"			
+			, v.codec "codec", v.intro "intro", nvl(v.duration, '0') "duration"
+			, m.game_id "gameId", m.tracking_yn "trackingYn", m.filming_state "filmingState"
+			, v.subst_live_yn "substLiveYn"			
+		FROM  tb_vod v, tb_multiview m
+		WHERE m.multiview_id = v.multiview_id
+		AND v.use_yn = 'Y'
+	</sql>
+
+	<!-- VOD 목록 조회 -->
+	<select id="selectVodList" resultType="map" parameterType="map">
+		<include refid="sqlSelectVod"/>
+		<if test="multiviewId != null and multiviewId != ''">
+			AND multiview_id = #{multiviewId}
+		</if>
+		ORDER BY multiview_id, vod_id
+		;
+	</select>
+
+	<!-- VOD 정보 조회 -->
+	<select id="selectVodInfo" resultType="map" parameterType="string">
+		<include refid="sqlSelectVod"/>
+		AND vod_id = #{vodId}
+		;
+	</select>
+
+	<!-- 메인화면 라이브 대체영상 -->
+	<select id="selectSubstLiveVodInfo" resultType="map">
+		<include refid="sqlSelectVod"/>
+		AND v.subst_live_yn = 'Y'
+		ORDER BY v.vod_id desc
+		LIMIT 1
+		; 		
+	</select>
+</mapper>

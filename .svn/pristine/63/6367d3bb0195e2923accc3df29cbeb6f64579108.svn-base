@@ -1,0 +1,35 @@
+/*
+* Interactive Timeslice version 1.0
+*
+*  Copyright ⓒ 2017 kt corp. All rights reserved.
+*
+*  This is a proprietary software of kt corp, and you may not use this file except in
+*  compliance with license agreement with kt corp. Any redistribution or use of this
+*  software, with or without modification shall be strictly prohibited without prior written
+*  approval of kt corp, and the copyright notice above does not evidence any actual or
+*  intended publication of such software.
+*/
+package com.kt.its.api.data;
+
+import java.util.List;
+
+import com.kt.its.api.model.ServerInfoBean;
+import com.kt.its.api.model.ServerSettingBean;
+
+/** 
+ * <pre>
+ * 설명		: 서버 세팅 정보 Mapper
+ * 작성일 	: 2017.02.08
+ * 작성자 	: yccho
+ * 변경 이력 	:
+ * </pre>
+ */
+public interface ServerSettingMapper {
+
+	/**
+	 * 서버 세팅 조회
+	 * @return
+	 */
+	ServerSettingBean selectServerSetting();
+
+}

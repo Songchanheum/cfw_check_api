@@ -1,0 +1,73 @@
+/*
+* Interactive Timeslice version 1.0
+*
+*  Copyright ⓒ 2017 kt corp. All rights reserved.
+*
+*  This is a proprietary software of kt corp, and you may not use this file except in
+*  compliance with license agreement with kt corp. Any redistribution or use of this
+*  software, with or without modification shall be strictly prohibited without prior written
+*  approval of kt corp, and the copyright notice above does not evidence any actual or
+*  intended publication of such software.
+*/
+package com.kt.its.api.data;
+
+import java.util.List;
+import java.util.Map;
+
+/** 
+ * <pre>
+ * 설명		: 멀티뷰 영상 정보 Mapper
+ * 작성일 	: 2017.02.08
+ * 작성자 	: yccho
+ * 변경 이력 	:
+ * </pre>
+ */
+public interface MultiviewMapper {
+
+	/**
+	 * MULTI VIEW 목록조회
+	 * @param param
+	 * @return
+	 */
+	List<Map<String, Object>> selectMultiviewList(Map<String, Object> param);
+	
+	/**
+	 * MULTI VIEW 정보조회
+	 * @param multiviewId
+	 * @return
+	 */
+	Map<String, Object> selectMultiviewInfo(String multiviewId);
+	
+	/**
+	 * 영상 데이터 생성(촬영 시작)
+	 * @param filmingState
+	 * @return
+	 */
+	int insertMultiviewInfo(Map<String, Object> param);
+	
+	/**
+	 * 촬영 진행상태 업데이트
+	 * @param filmingState
+	 * @return
+	 */
+	int updateMultiviewInfo(Map<String, Object> param);
+	
+	/**
+	 * 촬영 진행상태 조회 
+	 * @return
+	 */
+	String selectFilmingState();
+	
+	/**
+	 * 트래킹 여부 조회
+	 * @param param
+	 * @return
+	 */
+	String selectTrackingYn(Map<String, Object> param);
+	
+	/**
+	 * 라이브 영상 MULTIVIEW ID 조회
+	 * @return
+	 */
+	String selectLiveMultiviewId();
+}

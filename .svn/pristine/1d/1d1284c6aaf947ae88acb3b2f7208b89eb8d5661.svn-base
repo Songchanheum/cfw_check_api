@@ -1,0 +1,170 @@
+/*
+* Interactive Timeslice version 1.0
+*
+*  Copyright ⓒ 2017 kt corp. All rights reserved.
+*
+*  This is a proprietary software of kt corp, and you may not use this file except in
+*  compliance with license agreement with kt corp. Any redistribution or use of this
+*  software, with or without modification shall be strictly prohibited without prior written
+*  approval of kt corp, and the copyright notice above does not evidence any actual or
+*  intended publication of such software.
+*/
+package com.kt.its.api.service;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
+import com.kt.its.api.common.CommonUtil;
+import com.kt.its.api.data.TimesliceScheMapper;
+
+/** 
+ * <pre>
+ * 설명		: 타임슬라이스 영상 편성 정보 Service 구현
+ * 작성일 	: 2017.02.08
+ * 작성자 	: yccho
+ * 변경 이력 	:
+ * </pre>
+ */
+@Repository
+public class TimesliceScheServiceImpl implements TimesliceScheService {
+	private final Logger logger = LoggerFactory.getLogger(getClass());
+
+	@Autowired
+	TimesliceScheMapper timesliceScheMapper;
+	
+	/**
+	 * 타임슬라이스 영상 목록 조회
+	 */
+	@Override
+	public List<Map<String, Object>> selectTimesliceVodList(Map<String, Object> param) {
+		logger.info("selectTimesliceVodList param::"+ param);
+
+		List<Map<String, Object>> resultList = new ArrayList<Map<String, Object>>();
+		
+		try {
+			List<Map<String, Object>> list = timesliceScheMapper.selectTimesliceVodList(param);
+			
+			if(list != null && list.size() > 0) {
+				for(Map<String, Object> m : list) {
+					Map<String, Object> resultMap = new HashMap<String, Object>();
+
+					resultMap.put("vodId", m.get("timesliceId"));
+					resultMap.put("vodTitle", m.get("timesliceTitle"));
+					resultMap.put("thumbUrl", CommonUtil.getTimesliceUrl((String)m.get("timesliceId"), (String)m.get("deleImg")));
+					resultMap.put("vodUrl", CommonUtil.getTimesliceUrl((String)m.get("timesliceId")));
+					resultMap.put("duration", m.get("duration"));
+					
+					resultList.add(resultMap);
+				}
+			}				
+			
+		} catch (Exception e) {
+			throw new ServiceException(e.getMessage(), e.getCause());
+		}
+			
+		logger.info("selectTimesliceVodList result::" + resultList);
+		
+		return resultList;
+	}
+
+	@Override
+	public int selectTimesliceVodCount(Map<String, Object> param) {
+		logger.info("selectReplayVodCount param::"+ param);
+
+		int resultCount = 0;
+		
+		try {
+			resultCount = timesliceScheMapper.selectTimesliceVodCount(param);
+		} catch (Exception e) {
+			throw new ServiceException(e.getMessage(), e.getCause());
+		}
+			
+		logger.info("selectReplayVodCount result >>> " + resultCount);
+		
+		return resultCount;
+	}
+	
+	@Override
+	public List<Map<String, Object>> selectTimesliceCategory(Map<String, Object> param) {
+		logger.info("selectTimesliceCategory param::"+ param);
+
+		List<Map<String, Object>> resultList = new ArrayList<Map<String, Object>>();
+		
+		try {
+			List<Map<String, Object>> list = timesliceScheMapper.selectTimesliceCategory(param);
+			
+			if(list != null && list.size() > 0) {
+				for(Map<String, Object> m : list) {
+					Map<String, Object> resultMap = new HashMap<String, Object>();
+
+					resultMap.put("categoryId", m.get("categoryId"));
+					resultMap.put("categoryNm", m.get("categoryName"));
+					
+					resultList.add(resultMap);
+				}
+			}				
+			
+		} catch (Exception e) {
+			throw new ServiceException(e.getMessage(), e.getCause());
+		}
+			
+		logger.info("selectTimesliceCategory result::" + resultList);
+		
+		return resultList;
+	}
+
+	/**
+	 * 타임슬라이스 목록 조회(카테고리+영상)
+	 * @param param
+	 * @return
+	 */
+	public List<Map<String, Object>> selectTimesliceList(Map<String, Object> param) {
+		logger.info("selectTimesliceList param::"+ param);
+
+		List<Map<String, Object>> resultList = new ArrayList<Map<String, Object>>();
+		
+		try {
+			List<Map<String, Object>> cateList = selectTimesliceCategory(param);
+		
+			if(cateList != null && cateList.size() > 0) {
+				for(Map<String, Object> m : cateList) {
+					
+					String categoryId = String.valueOf(m.get("categoryId"));
+					param.put("categoryId", categoryId);
+					
+					List<Map<String, Object>> vodList = new ArrayList<Map<String, Object>>();
+					//int totVodCnt = 0;
+					
+					vodList = selectTimesliceVodList(param);
+					//totVodCnt = selectTimesliceVodCount(param);
+					
+					Map<String, Object> gameMap = new HashMap<String, Object>();
+
+					gameMap.put("categoryId", m.get("categoryId"));
+					gameMap.put("categoryNm", m.get("categoryNm"));
+					gameMap.put("tsList", vodList);
+					//gameMap.put("totVodCnt", totVodCnt);
+
+					resultList.add(gameMap);
+					
+					param.remove("categoryId");					
+				}
+			}				
+			
+		} catch (Exception e) {
+			throw new ServiceException(e.getMessage(), e.getCause());
+		}
+			
+		logger.info("selectTimesliceList result::" + resultList);
+		
+		return resultList;
+	}
+	
+}

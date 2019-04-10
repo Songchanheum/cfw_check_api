@@ -1,0 +1,735 @@
+/*
+* Interactive Timeslice version 1.0
+*
+*  Copyright ⓒ 2017 kt corp. All rights reserved.
+*
+*  This is a proprietary software of kt corp, and you may not use this file except in
+*  compliance with license agreement with kt corp. Any redistribution or use of this
+*  software, with or without modification shall be strictly prohibited without prior written
+*  approval of kt corp, and the copyright notice above does not evidence any actual or
+*  intended publication of such software.
+*/
+package com.kt.its.api.controller;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.json.JSONArray;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kt.its.api.common.CommonUtil;
+import com.kt.its.api.common.HttpClient;
+import com.kt.its.api.common.Resource;
+import com.kt.its.api.common.ResultUtil;
+import com.kt.its.api.service.CompService;
+import com.kt.its.api.service.DeleScheService;
+import com.kt.its.api.service.GameService;
+import com.kt.its.api.service.GameResultService;
+import com.kt.its.api.service.GuideService;
+import com.kt.its.api.service.LogService;
+import com.kt.its.api.service.MultiviewService;
+import com.kt.its.api.service.ReplayScheService;
+import com.kt.its.api.service.TimesliceScheService;
+import com.kt.its.api.service.TrackingInfoService;
+
+/** 
+ * <pre>
+ * 설명		: 모바일 서비스 연동 API Controller
+ * 작성일 	: 2017.02.08
+ * 작성자 	: yccho
+ * 변경 이력 	:
+ * </pre>
+ */
+@SuppressWarnings("PMD")
+@Controller
+public class MobileController extends BaseController {
+	
+	@Autowired
+	CompService compService;
+	
+	@Autowired
+	DeleScheService deleScheService;
+	
+	@Autowired
+	GameService gameService;
+	
+	@Autowired
+	GameResultService gameResultService;
+	
+	@Autowired
+	GuideService guideService;
+	
+	@Autowired
+	LogService logService;
+	
+	@Autowired
+	ReplayScheService replayScheService;
+	
+	@Autowired
+	TimesliceScheService timesliceScheService;
+	
+	@Autowired
+	MultiviewService multiviewService;
+	
+	@Autowired
+	TrackingInfoService trackingInfoService;
+	
+	// 기본 필수 파라미터
+	private String[] defaultValidKeys = {"deviceId"}; 
+	
+	
+	@Value("#{config['test.live.url']}")
+	private String TEST_LIVE_URL;
+
+	@Value("#{config['test.data.url']}")
+	private String TEST_DATA_URL;
+
+	/**
+	 * 메인 화면 편성 정보 조회
+	 * @param jsonStr
+	 * @return
+	 */
+	@RequestMapping(value = "/mobile/mainInfo", method = RequestMethod.POST)
+	public @ResponseBody Map<String, Object> mainInfo(
+			@RequestBody String jsonStr) {
+		
+		String procTitle = "[메인 화면 편성 정보 조회] ";
+		logger.info(procTitle + "Start mainInfo :: ");
+		logger.info(procTitle + "Request Parameters :: " + jsonStr);
+		
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+
+		try {
+			ObjectMapper mapper = new ObjectMapper();			
+			Map<String, Object> param = mapper.readValue(jsonStr, new TypeReference<HashMap<String, Object>>() {});				
+			List<String> invalidParams = CommonUtil.getInvalidParams(defaultValidKeys, param);
+			
+			if(invalidParams != null && invalidParams.size() == 0) {
+				
+
+				
+				// 진행중인 경기 정보
+				Map<String, Object> compInfo = gameService.selectCurrentGameInfo(param);
+				
+				param.put("compId", compInfo.get("compId"));
+				
+				// 대표 영상 목록
+				List<Map<String, Object>> deleVodList = deleScheService.selectDeleScheList(param);				
+				
+				// 타임슬라이스 영상목록
+				param.put("vodType", "T");
+				//List<Map<String, Object>> tsList = gameService.selectDeleGameList(param);
+				List<Map<String, Object>> tsList = gameService.selectDeleTimesliceList(param);
+				
+				// 리플레이 영상목록
+				param.put("vodType", "R");
+				List<Map<String, Object>> replayList = gameService.selectDeleGameList(param);
+				
+				resultMap.put("deleVodList", deleVodList);
+				resultMap.put("compInfo", compInfo);
+				resultMap.put("tsList", tsList);
+				resultMap.put("replayList", replayList);
+								
+				ResultUtil.setSuccess(resultMap);
+			}
+			else {
+				handleError(invalidParams, resultMap);
+			}
+		}
+		catch(Exception e) {
+			logger.error(procTitle + "Exception :: ", e);
+			handleError(resultMap, e);
+		}
+		
+		logger.debug(procTitle + "Result :: " + resultMap.toString());		
+		logger.info(procTitle + "End mainInfo :: ");
+		
+		return resultMap;
+	}
+	
+	/**
+	 * 대회 진행 일정 조회
+	 * @param jsonStr
+	 * @param compId
+	 * @return
+	 */
+	@RequestMapping(value = "/mobile/schedule/{compId}", method = RequestMethod.POST)
+	public @ResponseBody Map<String, Object> schedule(
+			@RequestBody String jsonStr,
+			@PathVariable String compId) {
+		
+		String procTitle = "[대회 진행 일정 조회] ";
+		logger.info(procTitle + "Start schedule :: compId=" + compId);
+		logger.info(procTitle + "Request Parameters :: " + jsonStr);
+		
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+
+		try {
+			ObjectMapper mapper = new ObjectMapper();			
+			Map<String, Object> param = mapper.readValue(jsonStr, new TypeReference<HashMap<String, Object>>() {});				
+			List<String> invalidParams = CommonUtil.getInvalidParams(defaultValidKeys, param);
+			
+			param.put("compId", compId);
+			
+			if(invalidParams != null && invalidParams.size() == 0) {
+				
+				// 대회 정보
+				resultMap = compService.selectCompInfo(compId);
+				
+				// 일자별 경기 목록
+				List<Map<String, Object>> gameDtList = gameService.selectGameScheduleList(param);
+				
+				resultMap.put("gameDtList", gameDtList);
+
+				ResultUtil.setSuccess(resultMap);
+			}
+			else {
+				handleError(invalidParams, resultMap);
+			}
+		}
+		catch(Exception e) {
+			logger.error(procTitle + "Exception :: ", e);
+			handleError(resultMap, e);
+		}
+
+		logger.debug(procTitle + "Result :: " + resultMap.toString());
+		logger.info(procTitle + "End schedule :: ");
+		
+		return resultMap;
+	}
+	
+	
+	/**
+	 * 경기 결과 정보 조회 
+	 * @param jsonStr
+	 * @param gameId
+	 * @return
+	 */
+	@RequestMapping(value = "/mobile/result/{gameId}", method = RequestMethod.POST)
+	public @ResponseBody Map<String, Object> result(
+			@RequestBody String jsonStr,
+			@PathVariable String gameId) {
+		
+		String procTitle = "[경기 결과 정보 조회] ";
+		logger.info(procTitle + "Start result :: gameId=" + gameId);
+		logger.info(procTitle + "Request Parameters :: " + jsonStr);
+		
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+
+		try {
+			ObjectMapper mapper = new ObjectMapper();			
+			Map<String, Object> param = mapper.readValue(jsonStr, new TypeReference<HashMap<String, Object>>() {});				
+			List<String> invalidParams = CommonUtil.getInvalidParams(defaultValidKeys, param);
+			
+			param.put("gameId", gameId);
+			
+			if(invalidParams != null && invalidParams.size() == 0) {
+				
+				// 경기결과 목록 조회
+				List<Map<String, Object>> rstList = gameResultService.selectGameResultList(gameId);
+				
+				// 타임슬라이스 목록 조회
+				//param.put("resultVideoYn", "Y");
+				//List<Map<String, Object>> tsList = timesliceScheService.selectTimesliceVodList(param);
+				
+				resultMap.put("rstList", rstList);				
+				//resultMap.put("tsList", tsList);
+				
+				ResultUtil.setSuccess(resultMap);
+			}
+			else {
+				handleError(invalidParams, resultMap);
+			}
+		}
+		catch(Exception e) {
+			logger.error(procTitle + "Exception :: ", e);
+			handleError(resultMap, e);
+		}
+
+		logger.debug(procTitle + "Result :: " + resultMap.toString());
+		logger.info(procTitle + "End result :: ");
+		
+		return resultMap;
+	}
+
+	
+	/**
+	 * 대회별 리플레이 목록 조회
+	 * @param compId
+	 * @param jsonStr
+	 * @return
+	 */
+	@RequestMapping(value = "/mobile/replayGames/{compId}", method = RequestMethod.POST)
+	public @ResponseBody Map<String, Object> replayGames(
+			@PathVariable String compId,
+			@RequestBody String jsonStr) {
+		
+		String procTitle = "[리플레이 목록 조회] ";
+		logger.info(procTitle + "Start replayGames :: ");
+		logger.info(procTitle + "Request Parameters :: " + jsonStr);
+		
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+
+		try {
+			ObjectMapper mapper = new ObjectMapper();			
+			Map<String, Object> param = mapper.readValue(jsonStr, new TypeReference<HashMap<String, Object>>() {});				
+			List<String> invalidParams = CommonUtil.getInvalidParams(defaultValidKeys, param);
+			
+			param.put("compId", compId);
+			
+			if(invalidParams != null && invalidParams.size() == 0) {
+				
+				// 리플레이 경기목록 조회
+				param.put("vodType", "R");
+				List<Map<String, Object>> gameList = gameService.selectCompGameList(param);
+				
+				// 리플레이 영상 목록 조회 - 첫 경기에 대한 영상 목록
+				// 파라미터에 경기 ID가 있을 경우 해당 경기에 대한 영상 목록 조회
+				List<Map<String, Object>> replayList;
+				if(gameList != null && gameList.size() > 0) {
+					
+					String gameId = null;
+					if(param.containsKey("gameId"))
+						gameId = (String)param.get("gameId");
+					
+					if(gameId == null || gameId.equals("")) {
+						gameId = (String)gameList.get(0).get("gameId");
+						param.put("gameId", gameId);
+					}
+					replayList = replayScheService.selectReplayVodList(param);
+					param.remove("gameId");
+				} else {
+					replayList = new ArrayList<>();
+				}
+
+				resultMap.put("gameList", gameList);		
+				resultMap.put("replayList", replayList);
+				
+				ResultUtil.setSuccess(resultMap);
+			}
+			else {
+				handleError(invalidParams, resultMap);
+			}
+		}
+		catch(Exception e) {
+			logger.error(procTitle + "Exception :: ", e);
+			handleError(resultMap, e);
+		}
+
+		logger.debug(procTitle + "Result :: " + resultMap.toString());
+		logger.info(procTitle + "End replayGames :: ");
+		
+		return resultMap;
+	}
+	
+	/**
+	 * 리플레이 영상 목록 조회
+	 * @param jsonStr
+	 * @param gameId
+	 * @return
+	 */
+	@RequestMapping(value = "/mobile/replay/{gameId}", method = RequestMethod.POST)
+	public @ResponseBody Map<String, Object> replay(
+			@RequestBody String jsonStr,
+			@PathVariable String gameId) {
+		
+		String procTitle = "[리플레이 영상 목록 조회] ";
+		logger.info(procTitle + "Start replay :: gameId=" + gameId);
+		logger.info(procTitle + "Request Parameters :: " + jsonStr);
+		
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+
+		try {
+			ObjectMapper mapper = new ObjectMapper();			
+			Map<String, Object> param = mapper.readValue(jsonStr, new TypeReference<HashMap<String, Object>>() {});				
+			List<String> invalidParams = CommonUtil.getInvalidParams(defaultValidKeys, param);
+			
+			param.put("gameId", gameId);
+			
+			if(invalidParams != null && invalidParams.size() == 0) {
+				
+				// 리플레이 영상 목록 조회
+				List<Map<String, Object>> replayList = replayScheService.selectReplayVodList(param);
+				
+				resultMap.put("replayList", replayList);		
+				
+				ResultUtil.setSuccess(resultMap);
+			}
+			else {
+				handleError(invalidParams, resultMap);
+			}
+		}
+		catch(Exception e) {
+			logger.error(procTitle + "Exception :: ", e);
+			handleError(resultMap, e);
+		}
+
+		logger.debug(procTitle + "Result :: " + resultMap.toString());
+		logger.info(procTitle + "End replay :: gameId=" + gameId);
+		
+		return resultMap;
+	}
+	
+	/**
+	 * 타임슬라이스 목록 조회
+	 * @param jsonStr
+	 * @return
+	 */
+	@RequestMapping(value = "/mobile/timeslice", method = RequestMethod.POST)
+	public @ResponseBody Map<String, Object> timeslice(
+			@RequestBody String jsonStr) {
+		
+		String procTitle = "[타임슬라이스 목록 조회] ";
+		logger.info(procTitle + "Start timeslice :: ");
+		logger.info(procTitle + "Request Parameters :: " + jsonStr);
+		
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+
+		try {
+			ObjectMapper mapper = new ObjectMapper();			
+			Map<String, Object> param = mapper.readValue(jsonStr, new TypeReference<HashMap<String, Object>>() {});				
+			List<String> invalidParams = CommonUtil.getInvalidParams(defaultValidKeys, param);
+			
+			if(invalidParams != null && invalidParams.size() == 0) {
+				
+				// 타임슬라이스 경기, 영상목록 조회
+				List<Map<String, Object>> categoryList = timesliceScheService.selectTimesliceList(param);
+
+				resultMap.put("categoryList", categoryList);		
+				
+				ResultUtil.setSuccess(resultMap);
+			}
+			else {
+				handleError(invalidParams, resultMap);
+			}
+		}
+		catch(Exception e) {
+			logger.error(procTitle + "Exception :: ", e);
+			handleError(resultMap, e);
+		}
+
+		logger.debug(procTitle + "Result :: " + resultMap.toString());
+		logger.info(procTitle + "End timeslice :: ");
+		
+		return resultMap;
+	}
+	
+	/**
+	 * 이용로그 누적
+	 * @param jsonStr
+	 * @return
+	 */
+	@RequestMapping(value = "/mobile/log", method = RequestMethod.POST)
+	public @ResponseBody Map<String, Object> log(
+			@RequestBody String jsonStr) {
+		
+		String procTitle = "[이용로그 누적] ";
+		logger.info(procTitle + "Start log :: ");
+		logger.info(procTitle + "Request Parameters :: " + jsonStr);
+		
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+
+		try {
+			String[] validKeys = {defaultValidKeys[0], "pathId", "vodType" };
+			
+			ObjectMapper mapper = new ObjectMapper();			
+			Map<String, Object> param = mapper.readValue(jsonStr, new TypeReference<HashMap<String, Object>>() {});				
+			List<String> invalidParams = CommonUtil.getInvalidParams(validKeys, param);
+			
+			if(invalidParams != null && invalidParams.size() == 0) {
+				
+				logService.insertLog(param);
+				
+				ResultUtil.setSuccess(resultMap);
+			}
+			else {
+				handleError(invalidParams, resultMap);
+			}
+		}
+		catch(Exception e) {
+			logger.error(procTitle + "Exception :: ", e);
+			handleError(resultMap, e);
+		}
+		
+		logger.debug(procTitle + "Result :: " + resultMap.toString());		
+		logger.info(procTitle + "End log :: ");
+		
+		return resultMap;
+	}
+	
+	/**
+	 * 이용안내 조회
+	 * @param jsonStr
+	 * @return
+	 */
+	@RequestMapping(value = "/mobile/guide", method = RequestMethod.POST)
+	public @ResponseBody Map<String, Object> guide(
+			@RequestBody String jsonStr) {
+		
+		String procTitle = "[이용안내 조회] ";
+		logger.info(procTitle + "Start guide :: ");
+		logger.info(procTitle + "Request Parameters :: " + jsonStr);
+		
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+
+		try {
+			ObjectMapper mapper = new ObjectMapper();			
+			Map<String, Object> param = mapper.readValue(jsonStr, new TypeReference<HashMap<String, Object>>() {});				
+			List<String> invalidParams = CommonUtil.getInvalidParams(defaultValidKeys, param);
+			
+			if(invalidParams != null && invalidParams.size() == 0) {
+				
+				List<Map<String, Object>> list = guideService.selectGuideList(param);
+				resultMap.put("guideList", list);
+				
+				ResultUtil.setSuccess(resultMap);
+			}
+			else {
+				handleError(invalidParams, resultMap);
+			}
+		}
+		catch(Exception e) {
+			logger.error(procTitle + "Exception :: ", e);
+			handleError(resultMap, e);
+		}
+
+		logger.debug(procTitle + "Result :: " + resultMap.toString());
+		logger.info(procTitle + "End guide :: ");
+		
+		return resultMap;
+	}
+	
+	/**
+	 * 라이브 중계 정보 조회
+	 * @param jsonStr
+	 * @return
+	 */
+	@RequestMapping(value = "/mobile/onAir", method = RequestMethod.POST)
+	public @ResponseBody Map<String, Object> onAir(
+			@RequestBody String jsonStr) {
+		
+		String procTitle = "[라이브 중계 정보 조회] ";
+		logger.info(procTitle + "Start onAir :: ");
+		logger.info(procTitle + "Request Parameters :: " + jsonStr);
+		
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+
+		try {
+			ObjectMapper mapper = new ObjectMapper();			
+			Map<String, Object> param = mapper.readValue(jsonStr, new TypeReference<HashMap<String, Object>>() {});				
+			List<String> invalidParams = CommonUtil.getInvalidParams(defaultValidKeys, param);
+			
+			if(invalidParams != null && invalidParams.size() == 0) {
+				
+				// 현재 촬영중인지의 여부 - 라이브영상 재생용
+				if(multiviewService.isOnAir()) {
+					resultMap.put("liveYn", "Y");
+					resultMap.put("pVodId", multiviewService.selectLiveMultiviewId());
+				} else {
+					resultMap.put("liveYn", "N");
+					resultMap.put("pVodId", "");
+				}
+				
+				// 진행중인 경기 정보(메인화면 업데이트용)
+				Map<String, Object> compInfo = gameService.selectOnAirInfo(param);
+				
+				resultMap.put("compInfo", compInfo);
+				
+				ResultUtil.setSuccess(resultMap);
+			}
+			else {
+				handleError(invalidParams, resultMap);
+			}
+		}
+		catch(Exception e) {
+			logger.error(procTitle + "Exception :: ", e);
+			handleError(resultMap, e);
+		}
+		
+		logger.debug(procTitle + "Result :: " + resultMap.toString());		
+		logger.info(procTitle + "End onAir :: ");
+		
+		return resultMap;
+	}
+	
+	
+	/**
+	 * 트래킹 정보 조회 - 트래킹 정보를 DB에서 조회
+	 * @param jsonStr
+	 * @return
+	 */
+	@RequestMapping(value = "/mobile/trackingInfo", method = RequestMethod.POST)
+	public @ResponseBody Map<String, Object> trackInfo(
+			@RequestBody String jsonStr) {
+
+		return getTrackInfo(jsonStr, false);
+	}
+
+	/**
+	 * 트래킹 정보 조회 - 트래킹 정보를 API를 통하여 조회
+	 * @param jsonStr
+	 * @return
+	 */
+	@RequestMapping(value = "/mobile/trackingInfoFromPES", method = RequestMethod.POST)
+	public @ResponseBody Map<String, Object> trackInfo2(
+			@RequestBody String jsonStr) {
+
+		return getTrackInfo(jsonStr, true);
+	}
+
+	/**
+	 * 트래킹 정보 조회
+	 * @param jsonStr
+	 * @param trackingFromPES PES API를 통하여 조회할 경우 true
+	 * @return
+	 */
+//	@RequestMapping(value = "/mobile/trackingInfo", method = RequestMethod.POST)
+//	public @ResponseBody Map<String, Object> trackInfo(
+//			@RequestBody String jsonStr) {
+	private @ResponseBody Map<String, Object> getTrackInfo(
+				@RequestBody String jsonStr, boolean trackingFromPES) {
+		String procTitle = "[트래킹 정보 조회] ";
+		logger.info(procTitle + "Start trackInfo :: ");
+		logger.info(procTitle + "Request Parameters :: " + jsonStr);
+		
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+
+		try {
+			ObjectMapper mapper = new ObjectMapper();			
+			Map<String, Object> param = mapper.readValue(jsonStr, new TypeReference<HashMap<String, Object>>() {});
+			
+			String[] validKeys = {defaultValidKeys[0], "frameNo"};
+			List<String> invalidParams = CommonUtil.getInvalidParams(validKeys, param);
+			
+			if(invalidParams != null && invalidParams.size() == 0) {
+				
+				// 파라미터에 multiview id(pVodId)가 포함되어있으면 리플레이 VOD, 없으면 LIVE VOD로 간주
+				boolean isLiveVod = false;
+				
+				String multiviewId = "";
+				if(param.containsKey("pVodId")) { // 리플레이영상
+					multiviewId = ((String)param.get("pVodId")).trim();
+					param.put("multiviewId", multiviewId);
+					param.remove("pVodId");
+				}
+
+				if(multiviewId.equals("")) { // 라이브영상					
+					multiviewId = multiviewService.selectLiveMultiviewId();
+					param.put("multiviewId", multiviewId);
+					isLiveVod = true;
+				} else {
+//					String vodId = CommonUtil.null2Empty((String)param.get("vodId")).trim();
+//					if(vodId.equals("")) {
+//						List<String> invalidParams2 = new ArrayList<>();
+//						invalidParams2.add("vodId");
+//						handleError(invalidParams2, resultMap);
+//						return resultMap;
+//					}
+				}
+
+				// 트래킹 여부 조회
+				String trackingYn = multiviewService.selectTrackingYn(param);
+				boolean isTracking = "Y".equals(trackingYn);
+				
+				// 트래킹 정보 목록
+				List<Map<String, Object>> trackingList;
+				
+				// 시점영상 목록
+				List<String> viewPointList;
+				
+				if(isTracking) { 
+					
+					if(trackingFromPES) { // API를 통한 트래킹정보 조회
+						trackingList = new ArrayList<>();
+
+						String f = (String)param.get("frameNo");
+						String v = (String)param.get("viewNo");
+						String x = (String)param.get("x");
+						String y = (String)param.get("y");
+						
+						String resultStr = HttpClient.call(Resource.GET_TRACKING_API_URL
+										+ "/?mvcode=" + multiviewId 
+										+ "&f=" + f 
+										+ "&v=" + v
+										+ "&x=" + x
+										+ "&y=" + y);
+
+						if(resultStr != null && resultStr.trim().length() > 0) {
+							String[] values = resultStr.split(",");
+							if(values.length > 0) {
+								int total = Integer.parseInt(values[0].trim());
+								
+								if(total == 0) {
+									logger.warn("No result...");
+								}
+								else if(total == (values.length-1)/5) {
+									int n = 1;
+									for(int i=0; i<total; i++) {
+										Map<String, Object> m = new HashMap<String, Object>();
+										m.put("camId", Integer.parseInt(values[n++].trim()));
+										m.put("x", Integer.parseInt(values[n++].trim()));
+										m.put("y", Integer.parseInt(values[n++].trim()));
+										m.put("w", Integer.parseInt(values[n++].trim()));
+										m.put("h", Integer.parseInt(values[n++].trim()));
+										m.put("validCam", 1);
+										trackingList.add(m);
+									}
+								}
+								else {
+									logger.error("Invalid result length...");
+								}
+							}
+							else {
+								logger.warn("Result length is zero...");
+							}
+						}
+						else {
+							logger.warn("Invalid result...");
+						}
+					}
+					
+					else { // DB를 통한 트래킹정보 조회
+						trackingList = trackingInfoService.selectTrackingList(param);
+					}
+					
+					viewPointList = trackingInfoService.selectMuxingList(param, isLiveVod);
+				} else {
+					trackingList = new ArrayList<>();
+					viewPointList = new ArrayList<>();
+				}
+				
+				trackingYn = (trackingList.size() > 0) ? trackingYn : "N";
+								
+				resultMap.put("pVodId", multiviewId);
+				resultMap.put("trackingYn", trackingYn);
+				resultMap.put("trackingList", trackingList);
+				resultMap.put("streamList", viewPointList);
+				
+				ResultUtil.setSuccess(resultMap);
+			}
+			else {
+				handleError(invalidParams, resultMap);
+			}
+		}
+		catch(Exception e) {
+			logger.error(procTitle + "Exception :: ", e);
+			handleError(resultMap, e);
+		}
+		
+		logger.debug(procTitle + "Result :: " + resultMap.toString());		
+		logger.info(procTitle + "End trackInfo :: ");
+		
+		return resultMap;
+	}
+}

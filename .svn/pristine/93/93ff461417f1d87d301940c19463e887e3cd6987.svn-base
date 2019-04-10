@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+   Interactive Timeslice version 1.0
+  
+   Copyright ⓒ 2017 kt corp. All rights reserved.
+   
+   This is a proprietary software of kt corp, and you may not use this file except in 
+   compliance with license agreement with kt corp. Any redistribution or use of this 
+   software, with or without modification shall be strictly prohibited without prior written 
+   approval of kt corp, and the copyright notice above does not evidence any actual or 
+   intended publication of such software. 
+ -->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kt.its.api.data.CamMapper">
+
+	<!-- 카메라 상태 업데이트 -->
+	<!-- 
+	<update id="updateCamState" parameterType="map">
+		UPDATE tb_cam
+		   SET cam_state = #{camState}
+		 WHERE cam_id = #{camId}
+		; 
+	</update>
+	 -->
+	 
+	<!-- 카메라 상태 업데이트 -->
+	<update id="updateCamState" parameterType="map">
+		<foreach collection="camList" item="item" separator=";">
+		UPDATE tb_cam
+		   SET cam_state = #{item.camState}
+		 WHERE cam_id = #{item.camId}
+		</foreach>
+	</update>
+	
+</mapper>

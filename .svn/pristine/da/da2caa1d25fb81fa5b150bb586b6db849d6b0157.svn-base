@@ -1,0 +1,94 @@
+/*
+* Interactive Timeslice version 1.0
+*
+*  Copyright ⓒ 2017 kt corp. All rights reserved.
+*
+*  This is a proprietary software of kt corp, and you may not use this file except in
+*  compliance with license agreement with kt corp. Any redistribution or use of this
+*  software, with or without modification shall be strictly prohibited without prior written
+*  approval of kt corp, and the copyright notice above does not evidence any actual or
+*  intended publication of such software.
+*/
+package com.kt.its.api.controller;
+
+
+import java.util.HashMap;
+import java.util.Map;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.kt.its.api.common.ResultUtil;
+import com.kt.its.api.common.ResultUtil.RESULT_CODE;
+
+/** 
+ * <pre>
+ * 설명		: API 연동 테스트를 위한 Controller
+ * 작성일 	: 2017.02.08
+ * 작성자 	: yccho
+ * 변경 이력 	:
+ * </pre>
+ */
+@Controller
+public class ApiTestController extends BaseController {
+	
+	@RequestMapping(value = "/apiIndex")
+	public String apiIndex() {
+		 return "/apiIndex";
+	}
+	@RequestMapping(value = "/apiCms")
+	public String apiCms() {
+		 return "/apiCms";
+	}
+	
+	@RequestMapping(value = "api_test", method = RequestMethod.GET)
+	public @ResponseBody Map<String, Object> apiTest() {
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+
+		try {
+			ResultUtil.setSuccess(resultMap);
+		}
+		catch(Exception e) {
+			ResultUtil.setError(RESULT_CODE.SYSTEM_ERROR, resultMap);
+		}
+		
+		return resultMap;		
+	}
+	
+	@RequestMapping(value = "api_test/{id}", method = RequestMethod.GET)
+	public @ResponseBody Map<String, Object> apiTest(@PathVariable String id) {
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+
+		try {
+			ResultUtil.setSuccess(resultMap);
+		}
+		catch(Exception e) {
+			ResultUtil.setError(RESULT_CODE.SYSTEM_ERROR, resultMap);
+		}
+		
+		return resultMap;		
+	}
+
+	@RequestMapping(value = "api_test/{id}/{id2}", method = RequestMethod.GET)
+	public @ResponseBody Map<String, Object> apiTest2(@PathVariable String id) {
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+
+		try {
+			ResultUtil.setSuccess(resultMap);
+		}
+		catch(Exception e) {
+			ResultUtil.setError(RESULT_CODE.SYSTEM_ERROR, resultMap);
+		}
+		
+		return resultMap;		
+	}
+	
+	@RequestMapping(value = "get_tracking", method = RequestMethod.GET)
+	public @ResponseBody String getTracking() {
+		return "40,0,1165,255,640,360,1,1224,259,640,360,2,1279,266,640,360,3,1279,279,640,360,4,1279,296,640,360,5,1279,319,640,360,6,1279,362,640,360,7,1279,378,640,360,8,1279,425,640,360,9,1279,447,640,360,10,1279,460,640,360,11,1279,474,640,360,12,1279,489,640,360,13,1279,507,640,360,14,1239,522,640,360,15,1186,540,640,360,16,1135,557,640,360,17,1068,577,640,360,18,987,600,640,360,19,899,617,640,360,20,816,628,640,360,21,716,633,640,360,22,609,634,640,360,23,512,627,640,360,24,422,615,640,360,25,322,595,640,360,26,244,580,640,360,27,179,563,640,360,28,120,546,640,360,29,67,531,640,360,30,19,516,640,360,31,0,502,640,360,32,0,485,640,360,33,0,470,640,360,34,0,454,640,360,35,0,432,640,360,36,0,405,640,360,37,0,383,640,360,38,0,356,640,360,39,0,328,640,360";
+	}
+
+}

@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+   Interactive Timeslice version 1.0
+  
+   Copyright ⓒ 2017 kt corp. All rights reserved.
+   
+   This is a proprietary software of kt corp, and you may not use this file except in 
+   compliance with license agreement with kt corp. Any redistribution or use of this 
+   software, with or without modification shall be strictly prohibited without prior written 
+   approval of kt corp, and the copyright notice above does not evidence any actual or 
+   intended publication of such software. 
+ -->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kt.its.api.data.MultiviewMapper">
+
+	<sql id="sqlSelectMultiview">
+		SELECT multiview_id "multiviewId", multiview_nm "multiviewNm"
+			, game_id "gameId", game_dt "gameDt"
+			, tracking_yn "trackingYn", filming_state "filmingState"
+			, use_yn "useYn", comp_id "compId"
+		FROM  tb_multiview
+		<!-- WHERE use_yn = 'Y' --> 
+	</sql>
+	
+	<!-- 멀티뷰 영상 목록 조회 -->
+	<select id="selectMultiviewList" resultType="map" parameterType="map">
+		<include refid="sqlSelectMultiview"/>
+		<where>
+			<if test="trackingYn != null and trackingYn != ''">
+				tracking_yn = #{trackingYn}
+			</if>
+			<if test="filmingState != null and filmingState != ''">
+				AND filming_state = #{filmingState}
+			</if>
+		</where>
+		ORDER BY multiview_id desc
+		;
+	</select>
+
+	<!-- 멀티뷰 영상 정보 조회 -->
+	<select id="selectMultiviewInfo" resultType="map" parameterType="string">
+		<include refid="sqlSelectMultiview"/>
+		WHERE multiview_id = #{multiviewId}
+		;
+	</select>
+	
+	<!-- 영상 데이터 생성 -->
+	<insert id="insertMultiviewInfo" parameterType="map">
+		INSERT INTO tb_multiview (
+			multiview_id, filming_state, comp_id, tracking_yn, use_yn
+		) 
+		SELECT #{multiviewId} "multiview_id"
+			, #{filmingState} "filming_state"
+			, (SELECT comp_id 
+			     FROM tb_comp 
+			    WHERE use_yn = 'Y'
+			      AND to_char(sysdate, 'yyyymmdd') between to_char(comp_start_dt, 'yyyymmdd') and to_char(comp_end_dt, 'yyyymmdd')
+			    ORDER BY comp_start_dt desc
+			    LIMIT 1) "comp_id"
+			, #{trackingYn} "tracking_yn"
+			, 'Y' "use_yn"
+		FROM dual 
+		;
+	</insert>
+	
+	<!-- 촬영상태 업데이트 -->
+	<update id="updateMultiviewInfo" parameterType="map">
+		UPDATE tb_multiview
+		   SET filming_state = #{filmingState}
+		 WHERE multiview_id = (SELECT max(multiview_id) FROM tb_multiview)
+		; 
+	</update>
+	
+	<!-- 촬영상태 조회 -->
+	<select id="selectFilmingState" resultType="string">
+		SELECT filming_state "filmingState"
+		FROM  tb_multiview 
+		WHERE multiview_id = (SELECT max(multiview_id) FROM tb_multiview)
+	</select>
+	
+	<!-- 트래킹여부 조회 -->
+	<select id="selectTrackingYn" resultType="string" parameterType="map">
+		SELECT tracking_yn "trackingYn"
+		FROM  tb_multiview
+		<choose>
+		<when test="multiviewId != null and multiviewId != ''">
+			WHERE multiview_id =  #{multiviewId}
+		</when>
+		<otherwise>
+			WHERE multiview_id = (SELECT max(multiview_id) FROM tb_multiview)
+		</otherwise>
+		</choose>
+	</select>
+	
+	<!-- 라이브 영상 MULTIVIEW ID 조회 -->
+	<select id="selectLiveMultiviewId" resultType="string">
+		SELECT max(multiview_id) "multiviewId"
+		FROM  tb_multiview 
+	</select>
+	
+</mapper>

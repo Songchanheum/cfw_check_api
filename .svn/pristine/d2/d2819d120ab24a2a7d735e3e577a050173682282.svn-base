@@ -1,0 +1,41 @@
+/*
+* Interactive Timeslice version 1.0
+*
+*  Copyright ⓒ 2017 kt corp. All rights reserved.
+*
+*  This is a proprietary software of kt corp, and you may not use this file except in
+*  compliance with license agreement with kt corp. Any redistribution or use of this
+*  software, with or without modification shall be strictly prohibited without prior written
+*  approval of kt corp, and the copyright notice above does not evidence any actual or
+*  intended publication of such software.
+*/
+package com.kt.its.api.data;
+
+import java.util.List;
+import java.util.Map;
+
+/** 
+ * <pre>
+ * 설명		: 경기결과 정보 Mapper
+ * 작성일 	: 2017.02.08
+ * 작성자 	: yccho
+ * 변경 이력 	:
+ * </pre>
+ */
+public interface GameResultMapper {
+
+	/**
+	 * 경기 결과 목록 조회
+	 * @param param
+	 * @return
+	 */
+	List<Map<String, Object>> selectGameResultList(String gameId);
+
+	/**
+	 * 경기 결과 개수 조회(경기결과 존재여부 확인용)
+	 * @param param
+	 * @return
+	 */
+	int selectGameResultCount(String gameId);
+	
+}

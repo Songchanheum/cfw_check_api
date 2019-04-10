@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+   Interactive Timeslice version 1.0
+  
+   Copyright ⓒ 2017 kt corp. All rights reserved.
+   
+   This is a proprietary software of kt corp, and you may not use this file except in 
+   compliance with license agreement with kt corp. Any redistribution or use of this 
+   software, with or without modification shall be strictly prohibited without prior written 
+   approval of kt corp, and the copyright notice above does not evidence any actual or 
+   intended publication of such software. 
+ -->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kt.its.api.data.GameMapper">
+
+	<sql id="selectGame">
+		SELECT game.comp_id "compId", comp.comp_nm "compNm"
+			, comp.comp_img_url "compImgUrl", comp.comp_sub_img_url "compSubImgUrl" 
+			, game.game_id "gameId", game.game_nm "gameNm", game.detail "detail"
+			, to_char(game.game_start_time, 'yyyymmdd') "gameDt"
+			, to_char(game.game_start_time, 'hh24mi') "gameStartTime"
+			, to_char(game.game_end_time, 'hh24mi') "gameEndTime"
+			, game.ins_id "insId", to_char(game.ins_dt, 'yyyymmddhh24miss') "insDt"
+			, game.upd_id "updId", to_char(game.upd_dt, 'yyyymmddhh24miss') "updDt"
+			, game.main_exposure_yn "mainExposureYn", game.use_yn "useYn"
+			, CASE WHEN nvl(onair.game_id, '') = '' THEN 'N' ELSE 'Y' END "onAirYn"
+			, game.img_url "gameImgUrl"
+			, gr1.nation "nation1", gr1.flag_img_url "flagImgUrl1", gr1.game_result "gameResult1" 
+			, gr2.nation "nation2", gr2.flag_img_url "flagImgUrl2", gr2.game_result "gameResult2"
+		FROM tb_comp comp, tb_game game
+			LEFT JOIN (SELECT game_id 
+				FROM tb_game 
+				WHERE sysdate BETWEEN game_start_time AND game_end_time) onair
+				ON onair.game_id = game.game_id
+			LEFT JOIN tb_game_result gr1 ON gr1.game_id = game.game_id and gr1.rank = 1
+			LEFT JOIN tb_game_result gr2 ON gr2.game_id = game.game_id and gr2.rank = 2
+		WHERE game.comp_id = comp.comp_id 
+		AND comp.use_yn = 'Y'
+		AND game.use_yn = 'Y'
+	</sql>
+
+	<!-- 진행중인 경기 정보 조회 -->
+	<select id="selectCurrentGameInfo" resultType="map" parameterType="map">
+		<include refid="selectGame"/>
+		<if test="compId != null and compId != ''" >
+		AND game.comp_id = #{compId}
+		</if>
+		AND sysdate between comp.comp_start_dt and comp.comp_end_dt
+		AND sysdate between game.game_start_time and game.game_end_time
+		ORDER BY game.game_start_time
+		LIMIT 1
+		;
+	</select>	
+
+	<!-- 최근 경기 정보 조회 -->
+	<select id="selectLastGameInfo" resultType="map" parameterType="map">
+		<include refid="selectGame"/>
+		<if test="compId != null and compId != ''" >
+		AND game.comp_id = #{compId}
+		</if>
+		<![CDATA[
+		AND comp.comp_start_dt < sysdate
+		AND game.game_start_time < sysdate
+		]]>
+		ORDER BY game.game_start_time desc
+		LIMIT 1
+		;
+	</select>
+
+	<!-- 이후시간의 경기 정보 조회 -->
+	<select id="selectNextGameInfo" resultType="map" parameterType="map">
+		<include refid="selectGame"/>
+		<if test="compId != null and compId != ''" >
+		AND game.comp_id = #{compId}
+		</if>
+		<![CDATA[
+		AND comp.comp_start_dt > sysdate
+		AND game.game_start_time > sysdate
+		]]>
+		ORDER BY game.game_start_time
+		LIMIT 1
+		;
+	</select>
+
+	<!-- 현재 시간이 오늘 경기 일정에 포함되는지 확인 -->
+	<select id="checkOnAirTimeCount" resultType="int" parameterType="map">
+		SELECT count(1) cnt
+		FROM (
+			SELECT a.min_time, a.max_time
+			FROM (SELECT min(game_start_time) "min_time", max(game_end_time) "max_time" 
+				FROM tb_game
+				WHERE use_yn = 'Y'
+				AND to_char(sysdate, 'YYYYMMDD') = to_char(game_start_time, 'YYYYMMDD')
+				<if test="compId != null and compId != ''" >
+					AND comp_id = #{compId}
+				</if>
+				) a
+			WHERE sysdate BETWEEN a.min_time AND a.max_time
+		)
+		;
+	</select>
+
+	<!-- 경기 진행 일자 조회 -->
+	<select id="selectGameDateList" resultType="map" parameterType="map">
+		SELECT DISTINCT game_start_time "gameDt"
+		FROM
+		(
+			SELECT to_char(game_start_time, 'yyyymmdd') game_start_time 
+			FROM tb_game game
+			LEFT JOIN tb_game_result gr1 ON gr1.game_id = game.game_id and gr1.rank = 1
+			WHERE game.use_yn = 'Y'
+			<if test="compId != null and compId != ''" >
+				AND game.comp_id = #{compId}
+			</if>
+			<if test="outNoResult != null and outNoResult != ''" >
+				AND gr1.nation is not null
+			</if>
+		)
+		ORDER BY game_start_time
+		;
+	</select>
+	
+	
+	<!-- 경기 일정 조회 -->
+	<select id="selectGameScheduleList" resultType="map" parameterType="map">
+		<include refid="selectGame"/>
+		<if test="compId != null and compId != ''" >
+			AND game.comp_id = #{compId}
+		</if>
+		<if test="gameDt != null and gameDt != ''" >
+			AND to_char(game.game_start_time, 'YYYYMMDD') = #{gameDt}
+		</if>
+		<if test="outNoResult != null and outNoResult != ''" >
+			AND gr1.nation is not null
+		</if>
+		ORDER BY game.game_start_time
+		;
+	</select>	
+
+
+	<!-- 경기 목록 조회 -->
+	<select id="selectGameList" resultType="map" parameterType="map">
+		<include refid="selectGame"/>
+		<if test="compId != null and compId != ''" >
+			AND game.comp_id = #{compId}
+		</if>
+		<choose>
+		<when test='deleVideoYn != null and "Y".equals(deleVideoYn)' > <!-- 메인화면 영상목록 노출용 -->
+			AND game.main_exposure_yn = 'Y'
+			ORDER BY game.game_start_time
+			<if test="vodType != null">
+				<choose>
+				<when test='vodType.equals("R")' > <!-- 메인화면에서 대표 리플레이 영상 체크 -->
+					<if test='noLimit == null or noLimit != "Y"'>
+					LIMIT 2
+					</if>
+				</when>
+				<when test='vodType.equals("T")' > <!-- 메인화면에서 대표 타임슬라이스 영상 체크 -->
+					LIMIT 1
+				</when>
+				</choose>
+			</if>			
+		</when>
+		<otherwise>
+			ORDER BY game.game_start_time
+		</otherwise>
+		</choose>
+		;
+	</select>
+
+</mapper>

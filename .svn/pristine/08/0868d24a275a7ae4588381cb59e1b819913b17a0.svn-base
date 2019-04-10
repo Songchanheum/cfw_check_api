@@ -1,0 +1,77 @@
+/*
+* Interactive Timeslice version 1.0
+*
+*  Copyright ⓒ 2017 kt corp. All rights reserved.
+*
+*  This is a proprietary software of kt corp, and you may not use this file except in
+*  compliance with license agreement with kt corp. Any redistribution or use of this
+*  software, with or without modification shall be strictly prohibited without prior written
+*  approval of kt corp, and the copyright notice above does not evidence any actual or
+*  intended publication of such software.
+*/
+package com.kt.its.api.service;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
+import com.kt.its.api.data.LogMapper;
+
+/** 
+ * <pre>
+ * 설명		: 이용로그 정보 Service 구현
+ * 작성일 	: 2017.02.08
+ * 작성자 	: yccho
+ * 변경 이력 	:
+ * </pre>
+ */
+@Repository
+public class LogServiceImpl implements LogService {
+	private final Logger logger = LoggerFactory.getLogger(getClass());
+	
+	@Autowired 
+	LogMapper logMapper;
+	
+	/**
+	 * 이용로그 누적
+	 */
+	@SuppressWarnings("unchecked")
+	@Override
+	public void insertLog(Map<String, Object> param) {
+		
+		try {
+			logger.info("insertLog param::"+ param);
+			
+			List<Map<String, Object>> list = (ArrayList<Map<String, Object>>)param.get("logList");
+			
+			if(list != null && list.size() > 0) {
+				
+				Map<String, Object> insertMap;
+				String deviceId = (String)param.get("deviceId");
+				
+				int n = 0;
+				for(Map<String, Object> m : list) {					
+
+					insertMap = new HashMap<String, Object>();
+					insertMap.put("deviceId", deviceId);
+					insertMap.put("accessPathId", m.get("pathId"));
+					insertMap.put("videoType", m.get("vodType"));
+					insertMap.put("videoId", m.get("vodId"));
+					
+					int res = logMapper.insertLog(insertMap);
+					logger.debug("insertLog result:: [" + (++n) + "] " + res);
+				}
+			} 
+			
+		} catch (Exception e) {
+			throw new ServiceException(e.getMessage(), e.getCause());
+		}
+	}
+
+}

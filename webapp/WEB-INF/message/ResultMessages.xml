@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+<comment>CFW-API Config</comment>
+<!-- 공통 코드  -->
+<entry key="ERR.101">존재하지 않는 API입니다.</entry>
+<entry key="ERR.102">필수 항목 누락 또는 항목 값이 올바르지 않습니다.</entry>
+<entry key="ERR.103">필수 항목이 누락되었습니다.</entry>
+<entry key="ERR.104">항목의 값이 올바르지 않습니다.</entry>
+<entry key="ERR.105">데이터 형식이 올바르지 않습니다.</entry>
+<entry key="ERR.106">데이터 길이가 올바르지 않습니다.</entry>
+
+<entry key="ERR.201">조회된 내용이 없습니다.</entry>
+<entry key="ERR.202">이미 등록된 데이터입니다.</entry>
+
+<entry key="ERR.901">시스템 오류가 발생했습니다.</entry>
+<entry key="ERR.902">DB 오류가 발생했습니다.</entry>
+<entry key="ERR.903">통신상태가 원할하지 않습니다.</entry>
+
+<entry key="ERR.999">오류가 발생했습니다.</entry>
+</properties>

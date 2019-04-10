@@ -1,0 +1,196 @@
+/*
+* Interactive Timeslice version 1.0
+*
+*  Copyright ⓒ 2017 kt corp. All rights reserved.
+*
+*  This is a proprietary software of kt corp, and you may not use this file except in
+*  compliance with license agreement with kt corp. Any redistribution or use of this
+*  software, with or without modification shall be strictly prohibited without prior written
+*  approval of kt corp, and the copyright notice above does not evidence any actual or
+*  intended publication of such software.
+*/
+package com.kt.its.api.controller;
+
+import java.io.File;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kt.its.api.common.CommonUtil;
+import com.kt.its.api.common.HttpClient;
+import com.kt.its.api.common.Resource;
+import com.kt.its.api.common.ResultUtil;
+import com.kt.its.api.common.ResultUtil.RESULT_CODE;
+import com.kt.its.api.service.MultiviewService;
+import com.kt.its.api.service.server.ServerConfig;
+
+/** 
+ * <pre>
+ * 설명		: 카메라 상태 알림 API Controller
+ * 작성일 	: 2017.02.08
+ * 작성자 	: yccho
+ * 변경 이력 	:
+ * </pre>
+ */
+@SuppressWarnings("PMD")
+@Controller
+public class NotifyController extends BaseController {
+	
+	@Autowired
+	MultiviewService multiviewService;
+	
+	@Autowired
+	ServerConfig serverConfig;
+	
+	/**
+	 * 전체 카메라 동작 상태 알림 Controller
+	 * @param jsonStr
+	 * @param camState
+	 * @return
+	 */
+	@RequestMapping(value = "/notify/camState/{camState}")//, method = RequestMethod.GET)
+	public @ResponseBody Map<String, Object> notifyCamState(
+			@PathVariable String camState) {
+		
+		String procTitle = "[전체 카메라 동작 상태 알림] ";
+		logger.info(procTitle + "Start notifyCamState :: camState=" + camState);
+		
+		Map<String, Object> resultMap = notifyAction(procTitle, camState);
+		
+		logger.debug(procTitle + "Result :: " + resultMap.toString());
+		logger.info(procTitle + "End notifyCamState :: camState=" + camState);
+		
+		return resultMap;
+	}
+	
+	/**
+	 * 전체 카메라 동작 상태 알림 - 파라미터를 POST 방식으로 포함한 API
+	 * @param jsonStr
+	 * @return
+	 */
+	@RequestMapping(value = "/notify/camera/state")//, method = RequestMethod.GET)
+	public @ResponseBody Map<String, Object> notifyCamState2(
+			@RequestBody String jsonStr) {
+		
+		String procTitle = "[전체 카메라 동작 상태 알림2] ";
+		logger.info(procTitle + "Start notifyCamState2 ::");
+
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+
+		try {
+			ObjectMapper mapper = new ObjectMapper();			
+			Map<String, Object> param = mapper.readValue(jsonStr, new TypeReference<HashMap<String, Object>>() {});
+			
+			String[] validKeys = {"state"};
+			List<String> invalidParams = CommonUtil.getInvalidParams(validKeys, param);
+			
+			if(invalidParams != null && invalidParams.size() == 0) {
+				
+				String camState = (String)param.get("state");
+				resultMap = notifyAction(procTitle, camState);
+			}
+			else {
+				handleError(invalidParams, resultMap);
+			}
+		}
+		catch(Exception e) {
+			logger.error(procTitle + "Exception :: ", e);
+			ResultUtil.setError(RESULT_CODE.SYSTEM_ERROR, resultMap);
+		}
+		
+		logger.debug(procTitle + "Result :: " + resultMap.toString());
+		logger.info(procTitle + "End notifyCamState2 :: ");
+
+		return resultMap;
+	}
+
+	private Map<String, Object> notifyAction(String procTitle, String camState) {
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+
+		try {
+			Map<String, Object> param = new HashMap<String, Object>();
+			param.put("filmingState", camState);
+			
+			int filmingStateResult = 0;
+			
+			// 촬영 시작
+			if(camState.equals(Resource.STATE_START)) {
+				
+				// 기존 MULTIVIEW 레코드의 촬영상태를 '촬영종료'로 업데이트
+				{
+					Map<String, Object> param2 = new HashMap<String, Object>();
+					param2.put("filmingState", Resource.STATE_STOP);
+					filmingStateResult = multiviewService.updateMultiviewInfo(param2);
+				}
+
+				String multiviewId = "M" + CommonUtil.getCurrentDateTimeMilis();
+				
+				// 플더 생성
+				try {
+					String multiviewPath = Resource.SERVER_SETTING.getNasPublicFolder() + Resource.MULTIVIEW_DIR + "/" + multiviewId;
+					logger.info("### multiviewPath=" + multiviewPath);
+					
+					File file = new File(multiviewPath);
+					if(!file.exists() || !file.isDirectory()) {
+						file.mkdirs();
+						logger.info("### make directory=" + file.getPath());
+					}
+				}
+				catch(Exception e) {
+					logger.error(procTitle + "Exception :: ", e);
+					ResultUtil.setError(RESULT_CODE.SYSTEM_ERROR, resultMap);
+					
+					logger.debug(procTitle + "Result :: " + resultMap.toString());
+					logger.info(procTitle + "End notifyCamState :: camState=" + camState);
+					
+					return resultMap;
+				}
+				
+				// DB 업데이트 - 레코드 생성 및 촬영상태 등록
+				param.put("multiviewId", multiviewId);
+				param.put("trackingYn", "Y"); // 트래킹여부: 기본값=Y
+				filmingStateResult = multiviewService.insertMultiviewInfo(param);
+
+				// DB 업데이트 - 시점영상 등록 
+				int vRes = multiviewService.insertViewPointFromCam(param);
+				
+				// DB 업데이트 - 라이브설정 영상맵 등록
+				int lRes = multiviewService.insertLiveSettingMultiviewMapFromLiveSetting(param);
+				
+				// 트래킹 서버에 multiview id 전송
+				String compId = "";
+				Map<String, Object> map = multiviewService.selectMultiviewInfo(multiviewId);
+				if(map != null)
+					compId = CommonUtil.null2Empty((String)map.get("compId"));
+				String resultStr = HttpClient.call(Resource.TRACKING_SERVER_URL+"/"+compId+"/"+multiviewId);
+				logger.info("### sendToTrackingServer=" + resultStr);
+				
+			}
+			// 촬영 종료
+			else if(camState.equals(Resource.STATE_STOP)) {
+				// DB 업데이트 - 촬영상태 업데이트
+				filmingStateResult = multiviewService.updateMultiviewInfo(param);
+
+			}
+			logger.debug(procTitle + "### filmingStateResult=" + filmingStateResult);
+			
+			ResultUtil.setSuccess(resultMap);
+		}
+		catch(Exception e) {
+			logger.error(procTitle + "Exception :: ", e);
+			ResultUtil.setError(RESULT_CODE.SYSTEM_ERROR, resultMap);
+		}
+		
+		return resultMap;
+	}
+}

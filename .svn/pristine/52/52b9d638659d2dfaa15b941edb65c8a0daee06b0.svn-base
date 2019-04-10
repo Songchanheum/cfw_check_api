@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+   Interactive Timeslice version 1.0
+  
+   Copyright ⓒ 2017 kt corp. All rights reserved.
+   
+   This is a proprietary software of kt corp, and you may not use this file except in 
+   compliance with license agreement with kt corp. Any redistribution or use of this 
+   software, with or without modification shall be strictly prohibited without prior written 
+   approval of kt corp, and the copyright notice above does not evidence any actual or 
+   intended publication of such software. 
+ -->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kt.its.api.data.ServerSettingMapper">
+
+	<select id="selectServerSetting" resultType="com.kt.its.api.model.ServerSettingBean">
+		SELECT setting_seq "settingSeq", nas_public_folder "nasPublicFolder"			
+			, hls_url "hlsUrl"
+			<!-- , capture_url "captureUrl", live_url "liveUrl", replay_url "replayUrl", timeslice_url "timesliceUrl" -->
+			, run_yn "runYn", cap_public_folder "capPublicFolder"
+		FROM  tb_server_setting 
+		ORDER BY setting_seq desc
+		LIMIT 1
+		;
+	</select>
+
+</mapper>

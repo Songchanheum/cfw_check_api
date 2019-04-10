@@ -1,0 +1,284 @@
+/*
+* Interactive Timeslice version 1.0
+*
+*  Copyright ⓒ 2017 kt corp. All rights reserved.
+*
+*  This is a proprietary software of kt corp, and you may not use this file except in
+*  compliance with license agreement with kt corp. Any redistribution or use of this
+*  software, with or without modification shall be strictly prohibited without prior written
+*  approval of kt corp, and the copyright notice above does not evidence any actual or
+*  intended publication of such software.
+*/
+package com.kt.its.api.service.monitoring;
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kt.its.api.common.CommonUtil;
+import com.kt.its.api.common.HttpClient;
+import com.kt.its.api.common.Resource;
+import com.kt.its.api.common.ResultUtil;
+import com.kt.its.api.common.ResultUtil.RESULT_CODE;
+import com.kt.its.api.data.CamMapper;
+import com.kt.its.api.data.ServerMapper;
+import com.kt.its.api.model.ServerInfoBean;
+import com.kt.its.api.service.ServiceException;
+
+/** 
+ * <pre>
+ * 설명		: Capture System 모니터링
+ * 작성일 	: 2017.02.08
+ * 작성자 	: yccho
+ * 변경 이력 	:
+ * </pre>
+ */
+@SuppressWarnings("PMD")
+@Component
+public class CaptureSystemMonitoring implements Runnable {
+	private final Logger logger = LoggerFactory.getLogger(getClass());
+	
+	@Autowired
+	CamMapper camMapper;
+	
+	@Autowired
+	ServerMapper serverMapper;
+	
+	private ExecutorService exeService = null;
+	private boolean bRun = false;
+	
+	public CaptureSystemMonitoring() {
+		bRun = false;
+	}
+	
+	public void startMonitoring() {
+		logger.info("startMonitoring ::");
+
+		bRun = true;			
+
+		if(exeService == null)
+			exeService = Executors.newSingleThreadExecutor();
+		exeService.execute(this);
+		exeService.shutdown();
+		exeService = null;
+		
+		setCaptureServerState(Resource.STATE_START);
+	}
+	
+	public void stopMonitoring() {
+		logger.info("stopMonitoring ::");
+		
+		bRun = false;
+		
+		setCaptureServerState(Resource.STATE_STOP);
+	}
+	
+	@Override
+	public void run() {
+		while(bRun) {
+			executeMonitoring();
+			
+			if(bRun) {
+				try {
+					TimeUnit.MILLISECONDS.sleep(Resource.MONITORING_REPEAT_SEC*1000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		
+	}
+	
+	private void executeMonitoring() {
+		logger.info("executeMonitoring ::");
+
+		if(bRun == false) return;
+
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+		ObjectMapper mapper = new ObjectMapper();
+
+		int updateCnt = 0;
+		
+		try {
+
+			//String resultStr = call(Resource.SERVER_SETTING.getCaptureUrl()+"/camera/state", null, Resource.CONNECT_TIMEOUT, Resource.READ_TIMEOUT);
+			String resultStr = call(Resource.CAPTURE_SERVER_URL+"/camera/state", null, Resource.CONNECT_TIMEOUT, Resource.READ_TIMEOUT);
+			
+			if(resultStr == null) {
+				ResultUtil.setError(RESULT_CODE.CONNECT_ERROR, resultMap);
+
+				setCaptureServerState(Resource.STATE_ERROR);
+			}
+			else if(CommonUtil.isJSONValid(resultStr)) {
+				resultMap = mapper.readValue(resultStr, new TypeReference<HashMap<String, Object>>() {});
+				
+				String rstCd = (String)resultMap.get("rstCode");
+				if(RESULT_CODE.SUCCESS.equals(rstCd)) {
+					
+					if(resultMap.containsKey("camList")) {
+						ArrayList<Map<String, Object>> camList = (ArrayList<Map<String, Object>>)resultMap.get("camList");
+						updateCnt = camList.size();
+						
+						if(camList.size() > 0) {
+							camMapper.updateCamState(resultMap);
+
+						} else {
+							logger.info("### Camera info not exist.");
+							
+						}
+					}
+					else {
+						ResultUtil.setError(RESULT_CODE.DATA_TYPE_ERROR, resultMap);
+
+						setCaptureServerState(Resource.STATE_ERROR);
+					}
+				}
+				else {
+					ResultUtil.setError(rstCd, resultMap);
+					
+					setCaptureServerState(Resource.STATE_ERROR);
+
+				}
+			} else {
+				ResultUtil.setError(RESULT_CODE.DATA_TYPE_ERROR, resultMap);
+				
+				setCaptureServerState(Resource.STATE_ERROR);
+			}
+			
+		} catch(Exception e) {
+			logger.error("Exception :: ", e);
+			ResultUtil.setError(RESULT_CODE.SYSTEM_ERROR, resultMap);
+
+			setCaptureServerState(Resource.STATE_ERROR);
+		}
+		
+		logger.debug("[Result] Count=" + updateCnt + ", " + resultMap.toString());
+	}
+	
+	private void setCaptureServerState(String state) {
+		if( !Resource.SERVER_INFO_CAPTURE.getServerState().equals(state) ) {
+			//serverConfig.updateCaptureServerState(state);
+			updateCaptureServerState(state);
+		}
+	}
+	
+	/**
+	 * 수집서버 상태 업데이트
+	 * @param serverState
+	 * @return
+	 */
+	private int updateCaptureServerState(String serverState) {
+		logger.info("updateCaptureServerState state="+serverState);
+		
+		int result = 0;
+		
+		try {
+			ServerInfoBean serverInfoBean = Resource.SERVER_INFO_CAPTURE;
+			
+			if(serverInfoBean != null) {
+				serverInfoBean.setServerState(serverState);
+				result = serverMapper.updateServerState(serverInfoBean);
+			}
+
+		} catch (Exception e) {
+			throw new ServiceException(e.getMessage(), e.getCause());
+		}
+		
+		logger.info("updateCaptureServerState result=" + result);
+		
+		return result;
+	}
+	
+	
+	private String call(String svrUrl, String params, int connTimeout, int readTimeout) {
+		URL url = null;
+        HttpURLConnection urlConn = null;
+
+        InputStream inputStream = null;
+		InputStreamReader inputStreamReader = null;
+		BufferedReader bufferedReader = null;
+
+		StringBuffer htmlContents = new StringBuffer();
+
+        try {
+            url = new URL(svrUrl);
+           	logger.info("Call Url: " + url.toString());
+            
+            urlConn = (HttpURLConnection)url.openConnection();
+            urlConn.setDoInput(true);
+            urlConn.setConnectTimeout(connTimeout);
+            urlConn.setReadTimeout(readTimeout);
+            urlConn.setDoOutput(true);
+            urlConn.setUseCaches(false);
+            urlConn.setDefaultUseCaches(false);
+            //urlConn.setRequestMethod("POST");
+            urlConn.setRequestProperty("content-type", "application/json;charset=utf-8");
+            
+            if(params != null && !params.trim().equals("")) {
+           		logger.info("Parameter: " + params);
+	            
+	            OutputStreamWriter outStreamWriter = null;
+	            outStreamWriter = new OutputStreamWriter(urlConn.getOutputStream(), "UTF-8");
+	            outStreamWriter.write(params);
+	            outStreamWriter.flush();
+	            outStreamWriter.close();
+            }
+            
+            String output = "";
+            inputStream = urlConn.getInputStream();
+			inputStreamReader = new InputStreamReader(inputStream, "UTF-8");
+			bufferedReader = new BufferedReader(inputStreamReader);
+			int i = 0;
+			
+			while((output = bufferedReader.readLine()) != null) {
+				if(++i > 1) htmlContents.append("\n");
+				htmlContents.append(output); 
+			}
+			
+			logger.debug("Return value -> " + htmlContents.toString());
+			
+			if (urlConn.getResponseCode() >= HttpURLConnection.HTTP_BAD_REQUEST)
+				throw new Exception(Integer.toString(urlConn.getResponseCode()));
+
+	        return htmlContents.toString();
+
+        } catch(Exception ex) {
+       		logger.warn("HttpClient.call: " + ex.getMessage());
+        	return null;
+		} finally {
+			try {
+				if(inputStream != null) inputStream.close();
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
+			try {
+				if(inputStreamReader != null) inputStreamReader.close();
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
+			try {
+				if(bufferedReader != null) bufferedReader.close();
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
+			if(urlConn != null) urlConn.disconnect();
+			url = null;
+		}
+	}
+}

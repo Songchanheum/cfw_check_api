@@ -1,0 +1,350 @@
+/*
+* Interactive Timeslice version 1.0
+*
+*  Copyright ⓒ 2017 kt corp. All rights reserved.
+*
+*  This is a proprietary software of kt corp, and you may not use this file except in
+*  compliance with license agreement with kt corp. Any redistribution or use of this
+*  software, with or without modification shall be strictly prohibited without prior written
+*  approval of kt corp, and the copyright notice above does not evidence any actual or
+*  intended publication of such software.
+*/
+package com.kt.its.api.service.server;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.annotation.PostConstruct;
+
+import org.apache.commons.lang.math.NumberUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+import com.google.common.collect.Lists;
+import com.kt.its.api.common.CommonUtil;
+import com.kt.its.api.common.Resource;
+import com.kt.its.api.data.ServerMapper;
+import com.kt.its.api.data.ServerSettingMapper;
+import com.kt.its.api.model.ServerInfoBean;
+import com.kt.its.api.service.ServiceException;
+import com.kt.its.api.service.monitoring.CaptureSystemMonitoring;
+import com.kt.its.api.service.monitoring.URLConnectionLoadBalancer;
+import com.netflix.loadbalancer.Server;
+import com.netflix.loadbalancer.Server.MetaInfo;
+
+/** 
+ * <pre>
+ * 설명		: 서버 설정 정보 보관 클래스
+ * 작성일 	: 2017.02.08
+ * 작성자 	: yccho
+ * 변경 이력 	:
+ * </pre>
+ */
+@SuppressWarnings("PMD")
+@Component
+public class ServerConfig {
+	private final Logger logger = LoggerFactory.getLogger(getClass());
+	
+	@Autowired
+	ServerMapper serverMapper;
+	
+	@Autowired 
+	ServerSettingMapper serverSettingMapper;
+	
+	@Autowired
+	CaptureSystemMonitoring csMonitoring;
+
+	
+	@Value("#{config['timeout.connect']}")
+	public String CONNECT_TIMEOUT;
+
+	@Value("#{config['timeout.read']}")
+	public String READ_TIMEOUT;
+
+	
+	@Value("#{config['dir.multiview']}")
+	public String MULTIVIEW_DIR;
+
+	@Value("#{config['dir.replay']}")
+	public String REPLAY_DIR;
+
+	@Value("#{config['dir.timeslice']}")
+	public String TIMESLICE_DIR;
+
+	@Value("#{config['dir.live']}")
+	public String LIVE_DIR;
+
+	@Value("#{config['dir.comp']}")
+	public String COMP_DIR;
+
+	
+	@Value("#{config['url.server.resource']}")
+	public String RESOURCE_SERVER_URL;
+
+	@Value("#{config['url.server.tracking']}")
+	public String TRACKING_SERVER_URL;
+
+	@Value("#{config['url.server.capture']}")
+	public String CAPTURE_SERVER_URL;
+
+	@Value("#{config['url.server.getTracking']}")
+	public String GET_TRACKING_API_URL;
+
+
+	@Value("#{config['file.name.vod']}")
+	public String VOD_FILE_NAME;
+
+	@Value("#{config['file.ext.vod']}")
+	public String VOD_FILE_EXT;
+	
+	
+	@Value("#{config['path.server.encoder']}")
+	public String ENCODER_SERVER_PATH;
+	
+	@Value("#{config['path.server.muxer']}")
+	public String MUXER_SERVER_PATH;
+
+	@Value("#{config['path.server.capture']}")
+	public String CAPTURE_SERVER_PATH;
+
+	@Value("#{config['monitoring.repeat.sec']}")
+	public String MONITORING_REPEAT_SEC;
+
+	// 서버접속 가능 체크
+	private URLConnectionLoadBalancer encoderLB; // Encoder
+	private URLConnectionLoadBalancer muxerLB; // Muxer
+	private URLConnectionLoadBalancer captureLB; // Capture System
+	
+	
+	@PostConstruct
+	public void init() {
+		logger.info("### init start::");
+		
+		logger.info("### properties load start::");
+		{
+			Resource.CONNECT_TIMEOUT = Integer.parseInt(CONNECT_TIMEOUT);
+			Resource.READ_TIMEOUT = Integer.parseInt(READ_TIMEOUT);
+			
+			Resource.MULTIVIEW_DIR = MULTIVIEW_DIR;
+			Resource.REPLAY_DIR = REPLAY_DIR;
+			Resource.TIMESLICE_DIR = TIMESLICE_DIR;
+			Resource.LIVE_DIR = LIVE_DIR;
+			Resource.COMP_DIR = COMP_DIR;
+			
+			Resource.VOD_FILE_NAME = VOD_FILE_NAME;
+			Resource.VOD_FILE_EXT = VOD_FILE_EXT;
+			
+			Resource.RESOURCE_SERVER_URL = RESOURCE_SERVER_URL;
+			Resource.TRACKING_SERVER_URL = TRACKING_SERVER_URL;
+			Resource.CAPTURE_SERVER_URL = CAPTURE_SERVER_URL;
+			Resource.GET_TRACKING_API_URL = GET_TRACKING_API_URL;
+			
+			Resource.ENCODER_SERVER_PATH = ENCODER_SERVER_PATH;
+			Resource.MUXER_SERVER_PATH = MUXER_SERVER_PATH;
+			Resource.CAPTURE_SERVER_PATH = CAPTURE_SERVER_PATH;
+			
+			Resource.MONITORING_REPEAT_SEC = NumberUtils.toInt(CommonUtil.null2Value(MONITORING_REPEAT_SEC, "1"));
+			
+			
+			logger.info("### CONNECT_TIMEOUT = " + Resource.CONNECT_TIMEOUT);
+			logger.info("### READ_TIMEOUT = " + Resource.READ_TIMEOUT);
+
+			logger.info("### MULTIVIEW_DIR = " + Resource.MULTIVIEW_DIR);
+			logger.info("### REPLAY_DIR = " + Resource.REPLAY_DIR);
+			logger.info("### TIMESLICE_DIR = " + Resource.TIMESLICE_DIR);
+			logger.info("### LIVE_DIR = " + Resource.LIVE_DIR);
+			logger.info("### COMP_DIR = " + Resource.COMP_DIR);
+
+			logger.info("### RESOURCE_SERVER_URL = " + Resource.RESOURCE_SERVER_URL);
+			logger.info("### CAPTURE_SERVER_URL = " + Resource.CAPTURE_SERVER_URL);
+			logger.info("### TRACKING_SERVER_URL = " + Resource.TRACKING_SERVER_URL);
+			logger.info("### GET_TRACKING_API_URL = " + Resource.GET_TRACKING_API_URL);
+
+			logger.info("### VOD_FILE_NAME = " + Resource.VOD_FILE_NAME);
+			logger.info("### VOD_FILE_EXT = " + Resource.VOD_FILE_EXT);
+
+			logger.info("### ENCODER_SERVER_PATH = " + Resource.ENCODER_SERVER_PATH);
+			logger.info("### MUXER_SERVER_PATH = " + Resource.MUXER_SERVER_PATH);
+			logger.info("### CAPTURE_SERVER_PATH = " + Resource.CAPTURE_SERVER_PATH);
+			
+			logger.info("### MONITORING_REPEAT_SEC = " + Resource.MONITORING_REPEAT_SEC);
+			
+		}
+		logger.info("### properties load end::");
+		
+		
+		logger.info("### init ServerInfo start::");
+		
+		List<ServerInfoBean> resultList = new ArrayList<ServerInfoBean>();
+		
+		try {
+			// 서버 정보
+			resultList = serverMapper.selectServerList();
+			
+			if(resultList != null && resultList.size() > 0) {
+				
+				Resource.SERVER_INFO_ENCODER.clear();
+				
+				for(ServerInfoBean bean : resultList) {
+					String serverType = bean.getServerType();
+					
+					if(serverType.equals(Resource.SERVER_TYPE_ENCODER)) { // 인코더
+						Resource.SERVER_INFO_ENCODER.add(bean);
+					}
+					else if(serverType.equals(Resource.SERVER_TYPE_CMS)) { // CMS
+						Resource.SERVER_INFO_CMS = bean;
+					}
+					else if(serverType.equals(Resource.SERVER_TYPE_CAPTURE)) { // 영상수집서버
+						Resource.SERVER_INFO_CAPTURE = bean;
+					}
+					else if(serverType.equals(Resource.SERVER_TYPE_MUXER)) { // MUXER
+						Resource.SERVER_INFO_MUXER = bean;
+					}
+					else if(serverType.equals(Resource.SERVER_TYPE_API)) { // API
+						Resource.SERVER_INFO_API = bean;
+					}
+					
+					Resource.SERVER_INFO_ALL.add(bean);
+				}
+				
+				if(Resource.SERVER_INFO_CAPTURE != null)
+					logger.info("### CAPTURE_SERVER: " + Resource.SERVER_INFO_CAPTURE.toString());
+				else
+					logger.info("### CAPTURE_SERVER: ");
+				if(Resource.SERVER_INFO_MUXER != null)
+					logger.info("### MUXER_SERVER: " + Resource.SERVER_INFO_MUXER.toString());
+				else
+					logger.info("### MUXER_SERVER: ");
+				if(Resource.SERVER_INFO_CMS != null)
+					logger.info("### STREAMER_SERVER: " + Resource.SERVER_INFO_CMS.toString());
+				else
+					logger.info("### STREAMER_SERVER: ");
+				if(Resource.SERVER_INFO_ENCODER != null)
+					logger.info("### ENCODER_SERVERS: " + Resource.SERVER_INFO_ENCODER.toString());
+				else
+					logger.info("### ENCODER_SERVERS: ");
+			}
+			logger.info("### init ServerInfo end::");
+			
+			
+			logger.info("### init ServerSetting start::");
+			
+			// 서버 세팅 정보
+			Resource.SERVER_SETTING = serverSettingMapper.selectServerSetting();
+			
+			if(Resource.SERVER_SETTING != null)
+				logger.info("### SERVER_SETTING: " + Resource.SERVER_SETTING.toString());
+			else
+				logger.info("### SERVER_SETTING: ");
+			
+			logger.info("### init ServerSetting end::");
+				
+			
+			
+			if(Resource.SERVER_SETTING != null) {
+				// 부팅 직후 타임슬라이스 서비스 시스템 상태가 시작 중이었는지를 체크하여 시작 후이면 모니터링 자동 시작
+				// 시작하지 않은 상태이면 서버 상태를 '정지'로 업데이트
+				if(Resource.SERVER_SETTING.getRunYn().equals("Y")) {
+					csMonitoring.startMonitoring(); // 시작
+					Resource.IS_MONITORING = true;
+				} else {
+					serverMapper.updateAllServerState(Resource.STATE_STOP);
+				}
+			}
+			
+			// 서버 접속가능상태 체크 모듈 시작
+			if(resultList != null && resultList.size() > 0) {
+				initLoadBalancer();
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		
+		logger.info("### init end::");
+	}
+	
+	/**
+	 * 서버 접속가능여부 체크 시작
+	 */
+	private void initLoadBalancer() {
+		logger.info("### init Loadbalance start::");
+		
+		if(encoderLB == null) {
+			if(Resource.SERVER_INFO_ENCODER != null) {
+				ArrayList<Server> servers = new ArrayList<Server>();
+				for(int i=0; i<Resource.SERVER_INFO_ENCODER.size(); i++) {
+					Server server = new Server(Resource.SERVER_INFO_ENCODER.get(i).getServerIp());
+					Resource.SERVER_INFO_ENCODER.get(i).setServer(server);
+					servers.add(server);
+				}
+				if(servers.size() > 0) {
+					encoderLB = new URLConnectionLoadBalancer(this, servers, ENCODER_SERVER_PATH+"/state");
+				}
+			}
+		}
+
+		if(muxerLB == null) {
+			if(Resource.SERVER_INFO_MUXER != null) {
+				Server server = new Server(Resource.SERVER_INFO_MUXER.getServerIp());
+				Resource.SERVER_INFO_MUXER.setServer(server);
+				muxerLB = new URLConnectionLoadBalancer(this, Lists.newArrayList(server), MUXER_SERVER_PATH+"/state");
+			}
+		}
+		
+//		if(captureLB == null) {
+//			if(Resource.SERVER_INFO_CAPTURE != null) {
+//				Server server = new Server(Resource.SERVER_INFO_CAPTURE.getServerIp());
+//				Resource.SERVER_INFO_CAPTURE.setServer(server);
+//				captureLB = new URLConnectionLoadBalancer(this, Lists.newArrayList(server), CAPTURE_SERVER_PATH);
+//			}
+//		}
+		
+		logger.info("### init Loadbalance end::");
+	}
+	
+	public URLConnectionLoadBalancer getEncoderLB() {
+		return encoderLB;
+	}
+	
+	public URLConnectionLoadBalancer getMuxerLB() {
+		return muxerLB;
+	}
+	
+	public URLConnectionLoadBalancer getCaptureLB() {
+		return captureLB;
+	}
+	
+	/**
+	 * 서버 시작/종료상태 업데이트
+	 * @param server
+	 * @param serverState
+	 * @return
+	 */
+	public int updateServerState(Server server, String serverState) {
+		int result = 0;
+		
+		try {
+			
+			for(ServerInfoBean serverInfoBean : Resource.SERVER_INFO_ALL) {
+				if(server == serverInfoBean.getServer()) {
+					serverInfoBean.setServerState(serverState);
+					result = serverMapper.updateServerState(serverInfoBean);
+					logger.debug(">>> updateServerState :: "+serverInfoBean.getServerId()+", "+serverInfoBean.getServerType()+", "+serverInfoBean.getServerIp());
+					break;
+				}
+			}
+
+		} catch (Exception e) {
+			throw new ServiceException(e.getMessage(), e.getCause());
+		}
+		
+		return result;
+	}
+	
+}
+

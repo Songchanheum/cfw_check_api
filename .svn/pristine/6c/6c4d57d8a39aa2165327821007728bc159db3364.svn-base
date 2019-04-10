@@ -1,0 +1,203 @@
+/*
+* Interactive Timeslice version 1.0
+*
+*  Copyright ⓒ 2017 kt corp. All rights reserved.
+*
+*  This is a proprietary software of kt corp, and you may not use this file except in
+*  compliance with license agreement with kt corp. Any redistribution or use of this
+*  software, with or without modification shall be strictly prohibited without prior written
+*  approval of kt corp, and the copyright notice above does not evidence any actual or
+*  intended publication of such software.
+*/
+package com.kt.its.api.service;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
+import com.kt.its.api.data.LiveSettingMultiviewMapMapper;
+import com.kt.its.api.data.MultiviewMapper;
+import com.kt.its.api.data.ViewpointMapper;
+
+/** 
+ * <pre>
+ * 설명		: Multiview 정보 Service 구현
+ * 작성일 	: 2017.02.08
+ * 작성자 	: yccho
+ * 변경 이력 	:
+ * </pre>
+ */
+@Repository
+public class MultiviewServiceImpl implements MultiviewService {
+	private final Logger logger = LoggerFactory.getLogger(getClass());
+	
+	@Autowired 
+	MultiviewMapper multiviewMapper;
+	
+	@Autowired
+	ViewpointMapper viewpointMapper;
+	
+	@Autowired
+	LiveSettingMultiviewMapMapper liveSettingMultiviewMapMapper;
+	
+	@Override
+	public Map<String, Object> selectMultiviewInfo(String multiviewId) {
+		logger.info("selectMultiviewInfo param::");
+		
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+		
+		try {
+			resultMap = multiviewMapper.selectMultiviewInfo(multiviewId);
+		} catch (Exception e) {
+			throw new ServiceException(e.getMessage(), e.getCause());
+		}
+		
+		logger.info("selectMultiviewInfo result::" + resultMap);
+		
+		return resultMap;
+	}
+	
+	@Override
+	public int insertMultiviewInfo(Map<String, Object> param) {
+		logger.info("insertFilmingState param::"+ param);
+
+		int result = 0;
+		
+		try {
+			
+			result = multiviewMapper.insertMultiviewInfo(param);
+			
+		} catch (Exception e) {
+			throw new ServiceException(e.getMessage(), e.getCause());
+		}
+
+		logger.debug("insertFilmingState result:: " + result);
+		
+		return result;
+	}
+
+	@Override
+	public int updateMultiviewInfo(Map<String, Object> param) {
+		logger.info("updateMultiviewInfo param::"+ param);
+
+		int result = 0;
+		
+		try {
+			
+			result = multiviewMapper.updateMultiviewInfo(param);
+			
+		} catch (Exception e) {
+			throw new ServiceException(e.getMessage(), e.getCause());
+		}
+
+		logger.debug("updateMultiviewInfo result:: " + result);
+		
+		return result;
+	}
+
+	/**
+	 * ON AIR 상태조회(촬영진행상태조회)
+	 */
+	@Override
+	public boolean isOnAir() {
+		logger.info("isOnAir param::");
+		
+		boolean isOnAir = false;
+		
+		try {
+			String filmingState = multiviewMapper.selectFilmingState();
+			logger.info("### filmingState=" + filmingState);
+			
+			isOnAir = "1".equals(filmingState);
+			
+		} catch (Exception e) {
+			throw new ServiceException(e.getMessage(), e.getCause());
+		}
+		
+		logger.info("isOnAir result::" + isOnAir);
+		
+		return isOnAir;
+	}
+
+	@Override
+	public int insertViewPointFromCam(Map<String, Object> param) {
+		logger.info("insertViewPointFromCam param::"+ param);
+
+		int result = 0;
+		
+		try {
+			
+			result = viewpointMapper.insertViewPointFromCam(param);
+			
+		} catch (Exception e) {
+			throw new ServiceException(e.getMessage(), e.getCause());
+		}
+
+		logger.debug("insertViewPointFromCam result:: " + result);
+		
+		return result;
+	}
+
+	@Override
+	public int insertLiveSettingMultiviewMapFromLiveSetting(Map<String, Object> param) {
+		logger.info("insertLiveSettingMultiviewMapFromLiveSetting param::"+ param);
+
+		int result = 0;
+		
+		try {
+			
+			result = liveSettingMultiviewMapMapper.insertLiveSettingMultiviewMapFromLiveSetting(param);
+			
+		} catch (Exception e) {
+			throw new ServiceException(e.getMessage(), e.getCause());
+		}
+
+		logger.debug("insertLiveSettingMultiviewMapFromLiveSetting result:: " + result);
+		
+		return result;
+	}
+
+	@Override
+	public String selectTrackingYn(Map<String, Object> param) {
+		logger.info("selectTrackingYn param::");
+		
+		String trackingYn = "N";
+		
+		try {
+			trackingYn = multiviewMapper.selectTrackingYn(param);
+			if(trackingYn == null || trackingYn.equals(""))
+				trackingYn = "N";
+			logger.info("### trackingYn=" + trackingYn);
+			
+		} catch (Exception e) {
+			throw new ServiceException(e.getMessage(), e.getCause());
+		}
+		
+		logger.info("selectTrackingYn result::" + trackingYn);
+		
+		return trackingYn;
+	}
+	
+	@Override
+	public String selectLiveMultiviewId() {
+		logger.info("selectLiveMultiviewId param::");
+		
+		String multiviewId = "";
+		
+		try {
+			multiviewId = multiviewMapper.selectLiveMultiviewId();
+			
+		} catch (Exception e) {
+			throw new ServiceException(e.getMessage(), e.getCause());
+		}
+		
+		logger.info("selectLiveMultiviewId result::" + multiviewId);
+		
+		return multiviewId;
+	}
+
+}

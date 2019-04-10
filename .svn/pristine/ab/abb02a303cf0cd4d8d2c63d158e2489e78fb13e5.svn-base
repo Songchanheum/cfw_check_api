@@ -1,0 +1,50 @@
+
+# EDB
+jdbc.driver=com.edb.Driver
+jdbc.url=jdbc:edb://dev.copynpaste.co.kr:25444/timeslice
+jdbc.username=timeslice_user
+jdbc.password=timeslice2016
+
+# MySQL
+mysql.jdbc.driver=com.mysql.jdbc.Driver
+mysql.jdbc.url=jdbc:mysql://dev.copynpaste.co.kr:23306/timeslice?autoReconnect=true&useUnicode=true&characterEncoding=utf8
+mysql.jdbc.username=timeslice_user
+mysql.jdbc.password=timeslice2016
+
+# DBCP
+dbcp.removeAbandoned=true
+dbcp.removeAbandonedTimeout=60
+dbcp.logAbandoned=false
+
+# TIMEOUT
+timeout.connect=3000
+timeout.read=5000
+
+# SERVER URL
+url.server.resource=http://dev.copynpaste.co.kr:8380/its
+url.server.capture=http://esmlab.com:1223
+url.server.tracking=http://dev.copynpaste.co.kr:8380/its-api/api_test
+url.server.getTracking=http://dev.copynpaste.co.kr:8380/its-api/get_tracking
+
+# RESOURCE FILE DIR
+dir.multiview=/mv_data
+dir.replay=/mv_av
+dir.timeslice=/mv_ts
+dir.live=/mv_live
+dir.comp=/common/comp
+
+# SERVER CONTEXT ROOT
+path.server.encoder=/encoder
+path.server.muxer=/remuxer
+path.server.capture=/
+
+# VOD FILE
+file.name.vod=playlist.m3u8
+file.ext.vod=mp4
+
+# MONITORING REPEAT SEC
+monitoring.repeat.sec=1
+
+# TEST
+test.live.url=http://rnd.copynpaste.co.kr/its/m001/playlist.m3u8
+test.data.url=http://rnd.copynpaste.co.kr/its

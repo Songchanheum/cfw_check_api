@@ -1,0 +1,86 @@
+/*
+* Interactive Timeslice version 1.0
+*
+*  Copyright ⓒ 2017 kt corp. All rights reserved.
+*
+*  This is a proprietary software of kt corp, and you may not use this file except in
+*  compliance with license agreement with kt corp. Any redistribution or use of this
+*  software, with or without modification shall be strictly prohibited without prior written
+*  approval of kt corp, and the copyright notice above does not evidence any actual or
+*  intended publication of such software.
+*/
+package com.kt.its.api.service;
+
+import java.util.Map;
+
+import org.springframework.stereotype.Service;
+
+/** 
+ * <pre>
+ * 설명		: Multiview 영상 정보 Service Interface
+ * 작성일 	: 2017.02.08
+ * 작성자 	: yccho
+ * 변경 이력 	:
+ * </pre>
+ */
+@Service
+public interface MultiviewService {
+	
+	/**
+	 * 영상 정보조회
+	 * @param multiviewId
+	 * @return
+	 */
+	Map<String, Object> selectMultiviewInfo(String multiviewId);
+	
+	/**
+	 * 영상 데이터 생성(촬영 시작)
+	 * @param filmingState
+	 * @return
+	 */
+	int insertMultiviewInfo(Map<String, Object> param);
+	
+	/**
+	 * 촬영 진행상태 업데이트
+	 * @param filmingState
+	 * @return
+	 */
+	int updateMultiviewInfo(Map<String, Object> param);
+
+	/**
+	 * ON AIR 상태조회(촬영 진행중인지 조회)
+	 * @return
+	 */
+	boolean isOnAir();
+	
+	
+	/**
+	 * 시점영상 정보를 카메라 정보를 이용하여 등록
+	 * @param param
+	 * @return
+	 */
+	int insertViewPointFromCam(Map<String, Object> param);
+
+	/**
+	 * 라이브설정 영상맵 정보를 라이브설정 정보를 이용하여 등록
+	 * @param param
+	 * @return
+	 */
+	int insertLiveSettingMultiviewMapFromLiveSetting(Map<String, Object> param);
+
+	/**
+	 * 트래킹 여부 조회
+	 * @param param
+	 * @return
+	 */
+	String selectTrackingYn(Map<String, Object> param);
+
+	
+	/**
+	 * 라이브영상 MULTIVIEW ID 조회
+	 * @param param
+	 * @return
+	 */
+	String selectLiveMultiviewId();
+
+}

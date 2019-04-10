@@ -1,0 +1,24 @@
+BODY { PADDING-RIGHT: 0px; PADDING-LEFT: 0px; PADDING-BOTTOM: 0px; MARGIN: 0px; PADDING-TOP: 0px; BACKGROUND-COLOR: #FFFFFF}
+BODY { FONT-SIZE: 9pt; COLOR: #424242; LINE-HEIGHT: 18px; FONT-FAMILY: ����,arial }
+TD { FONT-SIZE: 9pt; COLOR: #424242; LINE-HEIGHT: 18px; FONT-FAMILY: ����,arial }
+A { COLOR: #424242; TEXT-DECORATION: none; cursor: pointer; }
+A:link { COLOR: #424242; TEXT-DECORATION: none }
+A:visited { COLOR: #424242; TEXT-DECORATION: none }
+A:hover { COLOR: #424242; TEXT-DECORATION: underline } 
+.left_menu { FONT-SIZE: 12px; COLOR: #424242; FONT-FAMILY: ����,arial; TEXT-DECORATION: none }
+.left_menu A:link { FONT-SIZE: 12px; COLOR: #424242; FONT-FAMILY: ����,arial; TEXT-DECORATION: none }
+.left_menu A:visited { FONT-SIZE: 12px; COLOR: #424242; FONT-FAMILY: ����,arial; TEXT-DECORATION: none }
+.left_menu A:hover { FONT-SIZE: 12px; COLOR: #566f9e; FONT-FAMILY: ����,arial; TEXT-DECORATION: none }
+.white { FONT-SIZE: 12px; COLOR: #ffffff; FONT-FAMILY: ����,arial; TEXT-DECORATION: none }
+.white A:link { FONT-SIZE: 12px; COLOR: #ffffff; FONT-FAMILY: ����,arial; TEXT-DECORATION: none }
+.white A:visited { FONT-SIZE: 12px; COLOR: #ffffff; FONT-FAMILY: ����,arial; TEXT-DECORATION: none }
+.white A:hover { FONT-SIZE: 12px; COLOR: #ffffff; FONT-FAMILY: ����,arial; TEXT-DECORATION: none }
+.content { FONT-SIZE: 12px; COLOR: #666666; FONT-FAMILY: ����,arial; TEXT-DECORATION: none }
+.content A:link { FONT-SIZE: 12px; COLOR: #666666; FONT-FAMILY: ����,arial; TEXT-DECORATION: none }
+.content A:visited { FONT-SIZE: 12px; COLOR: #666666; FONT-FAMILY: ����,arial; TEXT-DECORATION: none }
+.content A:hover { FONT-SIZE: 12px; COLOR: #666666; FONT-FAMILY: ����,arial; TEXT-DECORATION: none }
+.textbox { BORDER-RIGHT: #c9c9c9 1px solid; BORDER-TOP: #c9c9c9 1px solid; BORDER-LEFT: #c9c9c9 1px solid; BORDER-BOTTOM: #c9c9c9 1px solid; HEIGHT: 20px; BACKGROUND-COLOR: #ffffff } 
+
+.white17 { FONT-SIZE: 16px; COLOR: #ffffff; FONT-FAMILY: Korean iTV SanSerifD,arial; TEXT-DECORATION: none }
+.white17b { FONT-SIZE: 16px; COLOR: #ffffff; FONT-WEIGHT:bold; FONT-FAMILY: Korean iTV SanSerifD,arial; TEXT-DECORATION: none }
+.white15 { FONT-SIZE: 15px; COLOR: #ffffff; FONT-FAMILY: Korean iTV SanSerifD,arial; TEXT-DECORATION: none }

@@ -1,0 +1,117 @@
+/*
+* Interactive Timeslice version 1.0
+*
+*  Copyright ⓒ 2017 kt corp. All rights reserved.
+*
+*  This is a proprietary software of kt corp, and you may not use this file except in
+*  compliance with license agreement with kt corp. Any redistribution or use of this
+*  software, with or without modification shall be strictly prohibited without prior written
+*  approval of kt corp, and the copyright notice above does not evidence any actual or
+*  intended publication of such software.
+*/
+package com.kt.its.api.service;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
+import com.kt.its.api.data.MultiviewMapper;
+import com.kt.its.api.data.ViewpointListMapper;
+import com.kt.its.api.data.ViewpointMapper;
+import com.kt.its.api.data2.PESTblMapper;
+
+/** 
+ * <pre>
+ * 설명		: 트래킹 정보 Service 구현
+ * 작성일 	: 2017.02.08
+ * 작성자 	: yccho
+ * 변경 이력 	:
+ * </pre>
+ */
+@Repository
+public class TrackingInfoServiceImpl implements TrackingInfoService {
+	private final Logger logger = LoggerFactory.getLogger(getClass());
+
+	@Autowired
+	PESTblMapper pesTblMapper;
+
+	@Autowired
+	ViewpointMapper viewpointMapper;
+	
+	@Autowired
+	ViewpointListMapper viewpointListMapper;
+	
+	@Autowired
+	MultiviewMapper multiviewMapper;
+	
+	@Override
+	public List<Map<String, Object>> selectTrackingList(Map<String, Object> param) {
+		logger.info("selectTrackingList param::"+ param);
+
+		List<Map<String, Object>> resultList = new ArrayList<Map<String, Object>>();
+		
+		try {
+			List<Map<String, Object>> list = pesTblMapper.selectTrackingList(param);
+			
+			if(list != null && list.size() > 0) {
+				for(Map<String, Object> m : list) {
+					Map<String, Object> resultMap = new HashMap<String, Object>();
+
+					resultMap.put("camId", m.get("camid"));
+					resultMap.put("x", m.get("x"));
+					resultMap.put("y", m.get("y"));
+					resultMap.put("w", m.get("w"));
+					resultMap.put("h", m.get("h"));
+					resultMap.put("validCam", m.get("valid_cam"));
+					
+					resultList.add(resultMap);
+				}
+			}				
+			
+		} catch (Exception e) {
+			throw new ServiceException(e.getMessage(), e.getCause());
+		}
+			
+		logger.info("selectTrackingList result::" + resultList);
+		
+		return resultList;
+	}
+
+	@Override
+	public List<String> selectMuxingList(Map<String, Object> param, boolean isLiveVod) {
+		logger.info("selectMuxingList param::"+ param);
+
+		List<String> resultList = new ArrayList<String>();
+		
+		try {
+			List<Map<String, Object>> list;
+			if(isLiveVod) {
+				String multiviewId = (String)param.get("multiviewId");
+				list = viewpointMapper.selectViewPointList(multiviewId);
+			} else {
+				String vodId = (String)param.get("vodId");
+				list = viewpointListMapper.selectViewPointList(vodId);
+			}
+			
+			if(list != null && list.size() > 0) {
+				for(Map<String, Object> m : list) {
+					resultList.add((String)m.get("streamNo"));
+				}
+			}				
+			
+		} catch (Exception e) {
+			throw new ServiceException(e.getMessage(), e.getCause());
+		}
+			
+		logger.info("selectViewPointList result::" + resultList);
+		
+		return resultList;
+	}
+
+}

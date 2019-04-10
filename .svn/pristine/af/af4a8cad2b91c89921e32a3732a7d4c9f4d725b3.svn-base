@@ -1,0 +1,520 @@
+/*
+* Interactive Timeslice version 1.0
+*
+*  Copyright ⓒ 2017 kt corp. All rights reserved.
+*
+*  This is a proprietary software of kt corp, and you may not use this file except in
+*  compliance with license agreement with kt corp. Any redistribution or use of this
+*  software, with or without modification shall be strictly prohibited without prior written
+*  approval of kt corp, and the copyright notice above does not evidence any actual or
+*  intended publication of such software.
+*/
+package com.kt.its.api.service;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
+import com.kt.its.api.common.CommonUtil;
+import com.kt.its.api.common.Resource;
+import com.kt.its.api.data.GameMapper;
+import com.kt.its.api.data.VodMapper;
+
+/** 
+ * <pre>
+ * 설명		: 경기 정보 Service 구현
+ * 작성일 	: 2017.02.08
+ * 작성자 	: yccho
+ * 변경 이력 	:
+ * </pre>
+ */
+@Repository
+public class GameServiceImpl implements GameService {
+	private final Logger logger = LoggerFactory.getLogger(getClass());
+
+	@Autowired
+	GameMapper gameMapper;
+	
+	@Autowired
+	VodMapper vodMapper;
+
+	@Autowired
+	GameResultService gameResultService;
+	
+	@Autowired
+	CompService compService;
+
+	@Autowired
+	TimesliceScheService timesliceScheService;
+	
+	@Autowired
+	ReplayScheService replayScheService;
+	
+	@Autowired
+	MultiviewService multiviewService;
+	
+	/**
+	 * 진행중인 게임정보 조회(메인 화면용)
+	 */
+	@Override
+	public Map<String, Object> selectCurrentGameInfo(Map<String, Object> param) {
+		logger.info("selectCurrGameInfo param::"+ param);
+
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+		
+		try {
+			Map<String, Object> m = gameMapper.selectCurrentGameInfo(param);
+			if(m == null) {
+				m = gameMapper.selectLastGameInfo(param);
+			}
+			if(m == null) {
+				m = gameMapper.selectNextGameInfo(param);
+			}
+			
+			if(m != null) {
+				
+				resultMap.put("compId", m.get("compId"));
+				resultMap.put("compNm", m.get("compNm"));
+				resultMap.put("compImgUrl", CommonUtil.getCompUrl((String)m.get("compId"), (String)m.get("compImgUrl")));
+				resultMap.put("compSubImgUrl", CommonUtil.getCompUrl((String)m.get("compId"), (String)m.get("compSubImgUrl")));
+				resultMap.put("gameId", m.get("gameId"));
+				resultMap.put("gameNm", m.get("gameNm"));
+				resultMap.put("gameDt", m.get("gameDt"));
+				resultMap.put("startTm", m.get("gameStartTime"));
+				//resultMap.put("endTm", m.get("gameEndTime"));
+				resultMap.put("gameImgUrl", CommonUtil.getCompUrl((String)m.get("compId"), (String)m.get("gameImgUrl")));
+				
+			} else {
+				resultMap.put("compId", "");
+				resultMap.put("compNm", "");
+				resultMap.put("compImgUrl", "");
+				resultMap.put("compSubImgUrl", "");
+				resultMap.put("gameId", "");
+				resultMap.put("gameNm", "");
+				resultMap.put("gameDt", "");
+				resultMap.put("startTm", "");
+				//resultMap.put("endTm", "");
+				resultMap.put("gameImgUrl", "");
+			}
+
+			
+			// OnAir 정보
+//			if("Y".equals((String)param.get("isForPlaying"))) {
+//				// 현재 촬영중인지의 여부 - 라이브영상 재생용
+//				if(multiviewService.isOnAir()) {
+//					resultMap.put("onAirYn", "Y");
+//					resultMap.put("onAirUrl", CommonUtil.getLiveUrl());
+//				}
+//				else {
+//					resultMap.put("onAirYn", "N");
+//					resultMap.put("onAirUrl", "");
+//				}
+//			}
+//			else {
+				// 경기 일정이 있는 기간이면 on air가 있는것으로 간주 - 메인화면용
+				Map<String, Object> p = new HashMap<String, Object>();
+				
+				String comp_id = (String)resultMap.get("compId");
+				if(comp_id != null && !comp_id.equals("")) {
+					p.put("compId", comp_id);
+				}
+				
+				if(gameMapper.checkOnAirTimeCount(p) > 0) {
+					resultMap.put("onAirYn", "Y");
+					resultMap.put("onAirUrl", CommonUtil.getLiveUrl());
+				} else {
+					resultMap.put("onAirYn", "N");
+					resultMap.put("onAirUrl", "");
+				}
+//			}
+			
+			// 라이브 대체영상
+			Map<String, Object> substVod = vodMapper.selectSubstLiveVodInfo();
+			
+			if(substVod != null) {
+				resultMap.put("vodId", substVod.get("vodId"));
+				resultMap.put("vodTitle", substVod.get("vodTitle"));
+				resultMap.put("vodUrl", CommonUtil.getReplayUrl((String)substVod.get("vodId")));
+				resultMap.put("vodTrackYn", substVod.get("trackingYn"));
+				resultMap.put("pVodId", m.get("multiviewId"));
+			} else {
+				resultMap.put("vodId", "");
+				resultMap.put("vodTitle", "");
+				resultMap.put("vodUrl", "");
+				resultMap.put("vodTrackYn", "N");
+				resultMap.put("pVodId", "");
+			}
+			
+		} catch (Exception e) {
+			throw new ServiceException(e.getMessage(), e.getCause());
+		}
+			
+		logger.info("selectCurrGameInfo result::" + resultMap);
+		
+		return resultMap;
+	}
+	
+
+
+	/**
+	 * 경기 진행 날짜 목록 조회
+	 */
+	@Override
+	public List<String> selectGameDateList(Map<String, Object> param) {
+		logger.info("selectGameDateList param::"+ param);
+
+		List<String> resultList = new ArrayList<String>();
+		
+		try {
+			List<Map<String, Object>> list = gameMapper.selectGameDateList(param);
+		
+			if(list != null && list.size() > 0) {
+				for(Map<String, Object> m : list) {
+					resultList.add((String)m.get("gameDt"));
+				}
+			}				
+		} catch (Exception e) {
+			throw new ServiceException(e.getMessage(), e.getCause());
+		}
+			
+		logger.info("selectGameDateList result::" + resultList);
+		
+		return resultList;
+	}
+	
+	/**
+	 * 일 별 경기 일정 조회
+	 */
+	@Override
+	public List<Map<String, Object>> selectGameScheduleList(Map<String, Object> param) {
+		logger.info("selectGameScheduleList param::"+ param);
+
+		List<Map<String, Object>> resultList = new ArrayList<Map<String, Object>>();
+		
+		try {
+			// 경기일자 목록
+			List<String> dateList = selectGameDateList(param);
+			
+			if(dateList != null && dateList.size() > 0) {
+				for(String dateStr : dateList) {
+					
+					param.put("gameDt", dateStr);
+
+					Map<String, Object> resultMap = new HashMap<String, Object>();
+
+					List<Map<String, Object>> dateGameList = new ArrayList<Map<String, Object>>();
+
+					// 일자별 경기목록
+					List<Map<String, Object>> gameList = gameMapper.selectGameScheduleList(param);
+
+					if(gameList != null && gameList.size() > 0) {
+								
+						for(Map<String, Object> m : gameList) {
+							Map<String, Object> gameMap = new HashMap<String, Object>();
+
+							gameMap.put("gameId", m.get("gameId"));
+							gameMap.put("gameNm", m.get("gameNm"));
+							gameMap.put("startTm", m.get("gameStartTime"));
+							gameMap.put("endTm", m.get("gameEndTime"));
+							gameMap.put("onAirYn", CommonUtil.null2Value(m.get("onAirYn"), "N"));
+							if("Y".equals((String)gameMap.get("onAirYn")))
+								gameMap.put("onAirUrl", CommonUtil.getLiveUrl());
+							else
+								gameMap.put("onAirUrl", "");
+							
+							int resultCnt = gameResultService.selectGameResultCount((String)m.get("gameId"));
+							gameMap.put("resultYn", (resultCnt > 0) ? "Y" : "N");
+							
+							gameMap.put("gameImgUrl", CommonUtil.getCompUrl((String)m.get("compId"), (String)m.get("gameImgUrl")));
+							
+							// 경기 결과 정보(축구 등)
+							gameMap.put("nation1", CommonUtil.null2Empty(m.get("nation1")));
+							gameMap.put("flagImgUrl1", CommonUtil.null2Empty(m.get("flagImgUrl1")));
+							gameMap.put("gameResult1", CommonUtil.null2Empty(m.get("gameResult1")));
+							gameMap.put("nation2", CommonUtil.null2Empty(m.get("nation2")));
+							gameMap.put("flagImgUrl2", CommonUtil.null2Empty(m.get("flagImgUrl2")));
+							gameMap.put("gameResult2", CommonUtil.null2Empty(m.get("gameResult2")));
+							
+							// 리플레이 영상 개수
+							Map<String, Object> map = new HashMap<String, Object>();
+							map.put("gameId", (String)m.get("gameId"));
+							int totVodCnt = replayScheService.selectReplayVodCount(map);
+							gameMap.put("totVodCnt", totVodCnt);
+							map = null;
+							
+							dateGameList.add(gameMap);
+						}
+					}
+
+					resultMap.put("gameDt", dateStr);
+					resultMap.put("gameList", dateGameList);
+
+					resultList.add(resultMap);
+
+					param.remove("gameDt");
+				}
+			}				
+			
+		} catch (Exception e) {
+			throw new ServiceException(e.getMessage(), e.getCause());
+		}
+			
+		logger.info("selectGameScheduleList result::" + resultList);
+
+		return resultList;
+	}
+
+	
+	/**
+	 * 현재 라이브 중계 정보 조회 - 라이브영상 재생용
+	 * @param param
+	 * @return
+	 */
+	@Override
+	public Map<String, Object> selectOnAirInfo(Map<String, Object> param) {
+		logger.info("selectOnAirInfo param::"+ param);
+
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+		
+//		// 현재 촬영중인지의 여부
+//		try {
+//			
+//			if(multiviewService.isOnAir()) {
+//				resultMap.put("onAirYn", "Y");
+//				resultMap.put("onAirUrl", CommonUtil.getLiveUrl());
+//			}
+//			else {
+//				resultMap.put("onAirYn", "N");
+//				resultMap.put("onAirUrl", "");
+//			}
+//			
+//		} catch (Exception e) {
+//			throw new ServiceException(e.getMessage(), e.getCause());
+//		}
+		
+		// 진행중인 게임정보 조회(메인 화면용) API를 통하여 조회하도록 수정
+		try {
+			param.put("isForPlaying", "Y");
+			resultMap = selectCurrentGameInfo(param);
+			param.remove("isForPlaying");
+		} catch (Exception e) {
+			throw new ServiceException(e.getMessage(), e.getCause());
+		}
+			
+		logger.info("selectOnAirInfo result::" + resultMap);
+		
+		return resultMap;
+	}
+
+	/**
+	 * 메인화면 노출용 경기목록조회(리플레이센터)
+	 * @param param
+	 * @return
+	 */
+	@Override
+	public List<Map<String, Object>> selectDeleGameList(Map<String, Object> param) {
+		logger.info("selectDeleGameList param::"+ param);
+
+		List<Map<String, Object>> resultList = new ArrayList<Map<String, Object>>();
+		
+		try {
+			param.put("deleVideoYn", "Y"); // 메인화면 노출용 경기와 VOD를 조회하기 위한 param
+
+			String vodType = CommonUtil.null2Empty((String)param.get("vodType"));
+
+			List<Map<String, Object>> gameList = gameMapper.selectGameList(param);
+		
+			if(gameList != null && gameList.size() > 0) {
+				for(Map<String, Object> m : gameList) {
+					
+					String gameId = (String)m.get("gameId");
+					param.put("gameId", gameId);
+					
+					List<Map<String, Object>> vodList = new ArrayList<Map<String, Object>>();
+					int totVodCnt = 0;
+					
+					if(vodType.equals("R")) { // 리플레이
+						vodList = replayScheService.selectReplayVodList(param);
+						totVodCnt = replayScheService.selectReplayVodCount(param);
+					}
+					else if(vodType.equals("T")) { // 타임슬라이스
+						vodList = timesliceScheService.selectTimesliceVodList(param);
+						totVodCnt = timesliceScheService.selectTimesliceVodCount(param);
+					}
+					
+					Map<String, Object> gameMap = new HashMap<String, Object>();
+
+					gameMap.put("gameId", m.get("gameId"));
+					gameMap.put("gameNm", m.get("gameNm"));
+					gameMap.put("vodList", vodList);
+					gameMap.put("totVodCnt", totVodCnt);
+
+					gameMap.put("gameImgUrl", CommonUtil.getCompUrl((String)m.get("compId"), (String)m.get("gameImgUrl")));
+					
+					resultList.add(gameMap);
+					
+					param.remove("gameId");					
+				}
+			}				
+			
+			param.remove("deleVideoYn");
+			
+		} catch (Exception e) {
+			throw new ServiceException(e.getMessage(), e.getCause());
+		}
+			
+		logger.info("selectDeleGameList result::" + resultList);
+		
+		return resultList;
+	}
+	
+	
+	/**
+	 * 메인화면 노출용 타임슬라이스목록조회
+	 * @param param
+	 * @return
+	 */
+	@Override
+	public List<Map<String, Object>> selectDeleTimesliceList(Map<String, Object> param) {
+		logger.info("selectDeleTimesliceList param::"+ param);
+
+		List<Map<String, Object>> resultList = new ArrayList<Map<String, Object>>();
+		
+		try {
+			param.put("deleVideoYn", "Y"); // 메인화면 노출용 경기와 VOD를 조회하기 위한 param
+
+			List<Map<String, Object>> cateList = timesliceScheService.selectTimesliceCategory(param);
+		
+			if(cateList != null && cateList.size() > 0) {
+				for(Map<String, Object> m : cateList) {
+					
+					String categoryId = String.valueOf(m.get("categoryId"));
+					param.put("categoryId", categoryId);
+					
+					List<Map<String, Object>> vodList = new ArrayList<Map<String, Object>>();
+					int totVodCnt = 0;
+					
+					vodList = timesliceScheService.selectTimesliceVodList(param);
+					totVodCnt = timesliceScheService.selectTimesliceVodCount(param);
+					
+					Map<String, Object> gameMap = new HashMap<String, Object>();
+
+					gameMap.put("gameId", m.get("categoryId"));
+					gameMap.put("gameNm", m.get("categoryNm"));
+					gameMap.put("vodList", vodList);
+					gameMap.put("totVodCnt", totVodCnt);
+
+					resultList.add(gameMap);
+					
+					param.remove("categoryId");					
+				}
+			}				
+			
+			param.remove("deleVideoYn");
+			
+		} catch (Exception e) {
+			throw new ServiceException(e.getMessage(), e.getCause());
+		}
+			
+		logger.info("selectDeleTimesliceList result::" + resultList);
+		
+		return resultList;
+	}
+	
+	/**
+	 * 대회별 경기 목록 조회
+	 * @param param
+	 * @param isMain
+	 * @return
+	 */
+	@Override
+//	public List<Map<String, Object>> selectCompGameList(Map<String, Object> param) {
+//		logger.info("selectGameList param::"+ param);
+//
+//		List<Map<String, Object>> resultList = new ArrayList<Map<String, Object>>();
+//		
+//		try {
+//			if(param.containsKey("compId")) {
+//				String compId = (String)param.get("compId");
+//				Map<String, Object> map = compService.selectCompInfo(compId);
+//				resultList.add(map);
+//			} else {
+//				resultList = compService.selectCompList();
+//			}
+//			
+//			if(resultList != null && resultList.size() > 0) {
+//				for(Map<String, Object> compMap : resultList) {
+//					String compId = (String)compMap.get("compId");
+//					
+//					param.put("compId", compId);
+//					
+//					List<Map<String, Object>> compGameList = new ArrayList<Map<String, Object>>();
+//					
+//					List<Map<String, Object>> gameList = gameMapper.selectGameList(param);
+//					
+//					if(gameList != null && gameList.size() > 0) {
+//						for(Map<String, Object> m : gameList) {
+//							Map<String, Object> gameMap = new HashMap<String, Object>();
+//							
+//							gameMap.put("gameId", m.get("gameId"));
+//							gameMap.put("gameNm", m.get("gameNm"));
+//							
+//							compGameList.add(gameMap);							
+//						}
+//					}
+//					
+//					compMap.put("gameList", compGameList);
+//
+//					param.remove("compId");
+//				}
+//			}
+//
+//		} catch (Exception e) {
+//			throw new ServiceException(e.getMessage(), e.getCause());
+//		}
+//			
+//		logger.info("selectGameList result::" + resultList);
+//		
+//		return resultList;
+//	}
+	public List<Map<String, Object>> selectCompGameList(Map<String, Object> param) {
+		logger.info("selectCompGameList param::"+ param);
+
+		List<Map<String, Object>> resultList = new ArrayList<Map<String, Object>>();
+		
+		try {
+			if(param.containsKey("compId")) {
+				List<Map<String, Object>> gameList = gameMapper.selectGameList(param);
+				
+				if(gameList != null && gameList.size() > 0) {
+					for(Map<String, Object> m : gameList) {
+						Map<String, Object> gameMap = new HashMap<String, Object>();
+						
+						gameMap.put("gameId", m.get("gameId"));
+						gameMap.put("gameNm", m.get("gameNm"));
+						
+						gameMap.put("gameImgUrl", CommonUtil.getCompUrl((String)m.get("compId"), (String)m.get("gameImgUrl")));
+						
+						gameMap.put("detail", CommonUtil.null2Empty(m.get("detail")));
+						
+						resultList.add(gameMap);							
+					}
+				}				
+			} 
+			
+		} catch (Exception e) {
+			throw new ServiceException(e.getMessage(), e.getCause());
+		}
+			
+		logger.info("selectCompGameList result::" + resultList);
+		
+		return resultList;
+	}
+	
+}

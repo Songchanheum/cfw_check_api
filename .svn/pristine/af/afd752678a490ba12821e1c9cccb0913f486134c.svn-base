@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+   Interactive Timeslice version 1.0
+  
+   Copyright ⓒ 2017 kt corp. All rights reserved.
+   
+   This is a proprietary software of kt corp, and you may not use this file except in 
+   compliance with license agreement with kt corp. Any redistribution or use of this 
+   software, with or without modification shall be strictly prohibited without prior written 
+   approval of kt corp, and the copyright notice above does not evidence any actual or 
+   intended publication of such software. 
+ -->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kt.its.api.data.ViewpointMapper">
+
+	<!-- 라이브설정 영상맵 정보를 라이브설정 정보를 이용하여 등록 -->
+	<insert id="insertViewPointFromCam" parameterType="map">
+		INSERT INTO tb_viewpoint (
+			viewpoint_seq
+			, stream_no
+			, multiview_id
+			, selection_yn
+			, ins_dt
+		) 
+		SELECT seq_log.nextVal "seq_log"
+			, cam_no 
+			, #{multiviewId} "multiview_id"
+			, selection_yn
+			, sysdate "ins_dt"
+		FROM tb_cam
+		ORDER BY cam_no
+		;
+	</insert>
+	
+	
+	<!-- 시점영상 목록 조회 - 라이브용 -->
+	<select id="selectViewPointList" resultType="map" parameterType="string">
+		SELECT stream_no "streamNo"
+		FROM  tb_viewpoint
+		WHERE multiview_id = #{multiviewId}
+		AND selection_yn = 'Y'
+		ORDER BY to_number(stream_no)
+		;
+	</select>
+	
+</mapper>

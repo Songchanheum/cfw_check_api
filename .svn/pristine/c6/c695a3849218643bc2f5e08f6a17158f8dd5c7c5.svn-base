@@ -1,0 +1,1015 @@
+/*
+* Interactive Timeslice version 1.0
+*
+*  Copyright ⓒ 2017 kt corp. All rights reserved.
+*
+*  This is a proprietary software of kt corp, and you may not use this file except in
+*  compliance with license agreement with kt corp. Any redistribution or use of this
+*  software, with or without modification shall be strictly prohibited without prior written
+*  approval of kt corp, and the copyright notice above does not evidence any actual or
+*  intended publication of such software.
+*/
+//package com.kt.its.api.controller;
+//
+//import java.util.ArrayList;
+//import java.util.HashMap;
+//import java.util.List;
+//import java.util.Map;
+//
+//import org.json.JSONArray;
+//import org.springframework.beans.factory.annotation.Autowired;
+//import org.springframework.beans.factory.annotation.Value;
+//import org.springframework.stereotype.Controller;
+//import org.springframework.web.bind.annotation.PathVariable;
+//import org.springframework.web.bind.annotation.RequestBody;
+//import org.springframework.web.bind.annotation.RequestMapping;
+//import org.springframework.web.bind.annotation.RequestMethod;
+//import org.springframework.web.bind.annotation.ResponseBody;
+//
+//import com.fasterxml.jackson.core.type.TypeReference;
+//import com.fasterxml.jackson.databind.ObjectMapper;
+//import com.kt.its.api.common.CommonUtil;
+//import com.kt.its.api.common.ResultUtil;
+//import com.kt.its.api.service.CompService;
+//import com.kt.its.api.service.DeleScheService;
+//import com.kt.its.api.service.GameService;
+//import com.kt.its.api.service.GameResultService;
+//import com.kt.its.api.service.GuideService;
+//import com.kt.its.api.service.LogService;
+//import com.kt.its.api.service.MultiviewService;
+//import com.kt.its.api.service.ReplayScheService;
+//import com.kt.its.api.service.TimesliceScheService;
+//import com.kt.its.api.service.TrackingInfoService;
+//
+//@Controller
+//public class MobileTestController extends BaseController {
+//	
+//	@Autowired
+//	CompService compService;
+//	
+//	@Autowired
+//	DeleScheService deleScheService;
+//	
+//	@Autowired
+//	GameService gameService;
+//	
+//	@Autowired
+//	GameResultService gameResultService;
+//	
+//	@Autowired
+//	GuideService guideService;
+//	
+//	@Autowired
+//	LogService logService;
+//	
+//	@Autowired
+//	ReplayScheService replayScheService;
+//	
+//	@Autowired
+//	TimesliceScheService timesliceScheService;
+//	
+//	@Autowired
+//	MultiviewService multiviewService;
+//	
+//	@Autowired
+//	TrackingInfoService trackingInfoService;
+//	
+//	// 기본 필수 파라미터
+//	private String[] defaultValidKeys = {"deviceId"}; 
+//	
+//	
+//	@Value("#{config['test.live.url']}")
+//	private String TEST_LIVE_URL;
+//
+//	@Value("#{config['test.data.url']}")
+//	private String TEST_DATA_URL;
+//
+//	/**
+//	 * 메인 화면 편성 정보 조회
+//	 * @param jsonStr
+//	 * @return
+//	 */
+//	@RequestMapping(value = "/mobile/mainInfo", method = RequestMethod.POST)
+//	public @ResponseBody Map<String, Object> mainInfo(
+//			@RequestBody String jsonStr) {
+//		
+//		String procTitle = "[메인 화면 편성 정보 조회] ";
+//		logger.info(procTitle + "Start mainInfo :: ");
+//		logger.info(procTitle + "Request Parameters :: " + jsonStr);
+//		
+//		Map<String, Object> resultMap = new HashMap<String, Object>();
+//
+//		try {
+//			ObjectMapper mapper = new ObjectMapper();			
+//			Map<String, Object> param = mapper.readValue(jsonStr, new TypeReference<HashMap<String, Object>>() {});				
+//			List<String> invalidParams = CommonUtil.getInvalidParams(defaultValidKeys, param);
+//			
+//			if(invalidParams != null && invalidParams.size() == 0) {
+//				
+//				// Dummy data
+//				// 대표 영상 목록
+//				{
+//					ArrayList<Map<String, Object>> deleVodList = new ArrayList<Map<String, Object>>();
+//					String[] keys = {"gameNm", "vodId", "vodTitle", "vodUrl"};
+//					String[][] values = {
+//							{"여자 싱글 프리스케이팅 #1", "V0001", "한국 박소연 #1", TEST_DATA_URL + "/v001/001.mp4"},
+//							{"여자 싱글 프리스케이팅 #2", "V0002", "한국 박소연 #2", TEST_DATA_URL + "/v001/002.mp4"},
+//							{"여자 싱글 프리스케이팅 #3", "V0003", "한국 박소연 #3", TEST_DATA_URL + "/v001/003.mp4"},
+//							{"여자 싱글 프리스케이팅 #4", "V0004", "한국 박소연 #4", TEST_DATA_URL + "/v001/004.mp4"},
+//					};
+//					for(int i=0; i<values.length; i++) {
+//						Map<String, Object> map = new HashMap<String, Object>();
+//						for(int j=0; j<values[i].length; j++) {
+//							map.put(keys[j], values[i][j]);
+//						}
+//						deleVodList.add(map);
+//					}
+//					resultMap.put("deleVodList", deleVodList);
+//				}
+//				
+//				// 진행중인 대회
+//				{
+//					Map<String, Object> compInfo = new HashMap<String, Object>();
+//					compInfo.put("compId","C0001");
+//					compInfo.put("compNm","2016 ISU 4대륙 피겨 선수권 대회");
+//					compInfo.put("compImgUrl",TEST_DATA_URL + "/test_img/comp_logo.png");
+//					compInfo.put("compSubImgUrl",TEST_DATA_URL + "/test_img/comp_logo_sub.png");
+//					compInfo.put("gameId","G0001");
+//					compInfo.put("gameNm","여자 싱글 프리스케이팅(FS)");
+//					compInfo.put("gameDt","20161102");
+//					compInfo.put("startTm","1830");
+//					compInfo.put("onAirYn","Y");
+//					compInfo.put("onAirUrl",TEST_LIVE_URL);//"http://rnd.copynpaste.co.kr/its/m001/playlist.m3u8");
+//					compInfo.put("vodId","");
+//					compInfo.put("vodTitle","");
+//					compInfo.put("vodUrl","");
+//					compInfo.put("vodTrackYn","N");
+//					compInfo.put("pVodId","M20170113191541086");
+//					resultMap.put("compInfo", compInfo);				
+//				}
+//				
+//				// 타임슬라이스 영상 목록
+//				{
+//					ArrayList<Map<String, Object>> tsList = new ArrayList<Map<String, Object>>();
+//					String[] keys = {"gameId", "gameNm", "totVodCnt", "vodList"};
+//					String[][] values = {
+//							{"G0001", "여자 싱글 쇼트프로그램", "21"},
+//							{"G0002", "남자 싱글 쇼트프로그램", "12"}
+//					};
+//					String[] keysSub = {"vodId", "vodTitle", "thumbUrl", "vodUrl", "duration"};
+//					String[][] valuesSub = {
+//							{"V0001", "애절한 박소윤 연기", TEST_DATA_URL + "/test_img/timeslice/t1.png", TEST_DATA_URL + "/v001/001.mp4", "300"},
+//							{"V0002", "리지준의 스파이럴", TEST_DATA_URL + "/test_img/timeslice/t2.png", TEST_DATA_URL + "/v001/002.mp4", "200"},
+//							{"V0003", "그레이시의 손동작", TEST_DATA_URL + "/test_img/timeslice/t3.png", TEST_DATA_URL + "/v001/003.mp4", "100"},
+//							{"V0004", "혼고의 간결한 스핀", TEST_DATA_URL + "/test_img/timeslice/t4.png", TEST_DATA_URL + "/v001/004.mp4", "100"},
+//							{"V0005", "무라카미의 점프 도약", TEST_DATA_URL + "/test_img/timeslice/t5.png", TEST_DATA_URL + "/v001/001.mp4", "200"},
+//							{"V0006", "이제 미야하라의 시간", TEST_DATA_URL + "/test_img/timeslice/t6.png", TEST_DATA_URL + "/v001/002.mp4", "300"},
+//					};
+//					String[][] valueSub2 = {
+//							{"V0004", "혼고의 간결한 스핀", TEST_DATA_URL+"/test_img/timeslice/t4.png", TEST_DATA_URL+"/v001/004.mp4", "100"},
+//							{"V0005", "무라카미의 점프 도약", TEST_DATA_URL+"/test_img/timeslice/t5.png", TEST_DATA_URL+"/v001/001.mp4", "200"},
+//							{"V0006", "이제 미야하라의 시간", TEST_DATA_URL+"/test_img/timeslice/t6.png", TEST_DATA_URL+"/v001/002.mp4", "300"},
+//							{"V0001", "애절한 박소윤 연기", TEST_DATA_URL+"/test_img/timeslice/t1.png", TEST_DATA_URL+"/v001/001.mp4", "400"},
+//							{"V0002", "리지준의 스파이럴", TEST_DATA_URL+"/test_img/timeslice/t2.png", TEST_DATA_URL+"/v001/002.mp4", "500"},
+//							{"V0003", "그레이시의 손동작", TEST_DATA_URL+"/test_img/timeslice/t3.png", TEST_DATA_URL+"/v001/003.mp4", "600"},
+//					};
+//					
+//					for(int i=0; i<values.length; i++) {
+//						Map<String, Object> map = new HashMap<String, Object>();
+//						int j = 0;
+//						for(j=0; j<values[i].length; j++) {
+//							map.put(keys[j], values[i][j]);
+//						}
+//						
+//						if(i>0) valuesSub = valueSub2;
+//						ArrayList<Map<String, Object>> vodList = new ArrayList<Map<String, Object>>();
+//						for(int m=0; m<valuesSub.length; m++) {
+//							Map<String, Object> mapSub = new HashMap<String, Object>();
+//							for(int n=0; n<valuesSub[m].length; n++) {
+//								mapSub.put(keysSub[n], valuesSub[m][n]);
+//							}
+//							vodList.add(mapSub);
+//						}						
+//						map.put(keys[j], vodList);						
+//						tsList.add(map);
+//					}
+//					resultMap.put("tsList", tsList);
+//				}
+//				
+//				// 리플레이 영상 목록
+//				{
+//					ArrayList<Map<String, Object>> replayList = new ArrayList<Map<String, Object>>();
+//					String[] keys = {"gameId", "gameNm", "totVodCnt", "vodList"};
+//					String[][] values = {
+//							{"G0001", "여자 싱글 쇼트프로그램", "15"},
+//							{"G0002", "남자 싱글 쇼트프로그램", "17"},
+//					};
+//					String[] keysSub = {"vodId", "vodTitle", "thumbUrl", "vodUrl", "duration", "vodTrackYn", "pVodId"};
+//					String[][] valuesSub = {
+//							{"V0001", "한국 박소윤", TEST_DATA_URL+"/test_img/replay/r1.png", TEST_DATA_URL+"/m001/playlist.m3u8", "200", "N", "0000000"},
+//							{"V0002", "캐나다 캐이틀린 오즈먼드", TEST_DATA_URL+"/test_img/replay/r2.png", TEST_DATA_URL+"/m002/playlist.m3u8", "120", "N", "0000000"},
+//					};
+//					String[][] valueSub2 = {
+//							{"V0003", "캐나다 패트릭 챈", TEST_DATA_URL+"/test_img/replay/r3.png", TEST_DATA_URL+"/m001/playlist.m3u8", "200", "N", "0000000"},
+//							{"V0004", "필리핀 마르티네즈", TEST_DATA_URL+"/test_img/replay/r4.png", TEST_DATA_URL+"/m001/playlist.m3u8", "300", "N", "0000000"},
+//					};
+//
+//					for(int i=0; i<values.length; i++) {
+//						Map<String, Object> map = new HashMap<String, Object>();
+//						int j = 0;
+//						for(j=0; j<values[i].length; j++) {
+//							map.put(keys[j], values[i][j]);
+//						}
+//						
+//						if(i>0) valuesSub = valueSub2;
+//						ArrayList<Map<String, Object>> vodList = new ArrayList<Map<String, Object>>();
+//						for(int m=0; m<valuesSub.length; m++) {
+//							Map<String, Object> mapSub = new HashMap<String, Object>();
+//							for(int n=0; n<valuesSub[m].length; n++) {
+//								mapSub.put(keysSub[n], valuesSub[m][n]);
+//							}
+//							vodList.add(mapSub);
+//						}						
+//						map.put(keys[j], vodList);						
+//						replayList.add(map);
+//					}
+//					resultMap.put("replayList", replayList);
+//				}				
+//				//				
+//				
+//				ResultUtil.setSuccess(resultMap);
+//			}
+//			else {
+//				handleError(invalidParams, resultMap);
+//			}
+//		}
+//		catch(Exception e) {
+//			logger.error(procTitle + "Exception :: ", e);
+//			handleError(resultMap, e);
+//		}
+//		
+//		logger.debug(procTitle + "Result :: " + resultMap.toString());		
+//		logger.info(procTitle + "End mainInfo :: ");
+//		
+//		return resultMap;
+//	}
+//	
+//	/**
+//	 * 대회 진행 일정 조회
+//	 * @param jsonStr
+//	 * @param compId
+//	 * @return
+//	 */
+//	@RequestMapping(value = "/mobile/schedule/{compId}", method = RequestMethod.POST)
+//	public @ResponseBody Map<String, Object> schedule(
+//			@RequestBody String jsonStr,
+//			@PathVariable String compId) {
+//		
+//		String procTitle = "[대회 진행 일정 조회] ";
+//		logger.info(procTitle + "Start schedule :: compId=" + compId);
+//		logger.info(procTitle + "Request Parameters :: " + jsonStr);
+//		
+//		Map<String, Object> resultMap = new HashMap<String, Object>();
+//
+//		try {
+//			ObjectMapper mapper = new ObjectMapper();			
+//			Map<String, Object> param = mapper.readValue(jsonStr, new TypeReference<HashMap<String, Object>>() {});				
+//			List<String> invalidParams = CommonUtil.getInvalidParams(defaultValidKeys, param);
+//			
+//			param.put("compId", compId);
+//			
+//			if(invalidParams != null && invalidParams.size() == 0) {
+//				
+//								
+//				// Dummy data
+//				StringBuilder sb = new StringBuilder()
+//						.append("{                                                      ")
+//						.append("  \"gameDtList\": [									")
+//						.append("    {													")
+//						.append("      \"gameDt\": \"20170209\",						")
+//						.append("      \"gameList\": [									")
+//						.append("        {												")
+//						.append("          \"onAirYn\": \"N\",							")
+//						.append("          \"onAirUrl\": \"\",							")
+//						.append("          \"startTm\": \"100000\",						")
+//						.append("          \"gameNm\": \"남자 쇼트 프로그램 - 단체전\",		")
+//						.append("          \"gameId\": \"1\",							")
+//						.append("          \"resultYn\": \"Y\"							")
+//						.append("        },												")
+//						.append("        {												")
+//						.append("          \"onAirYn\": \"N\",							")
+//						.append("          \"onAirUrl\": \"\",							")
+//						.append("          \"startTm\": \"120000\",						")
+//						.append("          \"gameNm\": \"페어 쇼트 프로그램 - 단체전\",		")
+//						.append("          \"gameId\": \"5\",							")
+//						.append("          \"resultYn\": \"Y\"							")
+//						.append("        }												")
+//						.append("      ]												")
+//						.append("    },													")
+//						.append("    {													")
+//						.append("      \"gameDt\": \"20170211\",						")
+//						.append("      \"gameList\": [									")
+//						.append("        {												")
+//						.append("          \"onAirYn\": \"N\",							")
+//						.append("          \"onAirUrl\": \"\",							")
+//						.append("          \"startTm\": \"100000\",						")
+//						.append("          \"gameNm\": \"여자 쇼트 프로그램 - 단체전\",		")
+//						.append("          \"gameId\": \"3\",							")
+//						.append("          \"resultYn\": \"Y\"							")
+//						.append("        },												")
+//						.append("        {												")
+//						.append("          \"onAirYn\": \"Y\",							")
+//						.append("          \"onAirUrl\": \"" + TEST_LIVE_URL + "\",							")
+//						.append("          \"startTm\": \"120000\",						")
+//						.append("          \"gameNm\": \"페어 프리 스케이팅 - 단체전\",		")
+//						.append("          \"gameId\": \"6\",							")
+//						.append("          \"resultYn\": \"N\"							")
+//						.append("        }												")
+//						.append("      ]												")
+//						.append("    },													")
+//						.append("    {													")
+//						.append("      \"gameDt\": \"20170212\",						")
+//						.append("      \"gameList\": [									")
+//						.append("        {												")
+//						.append("          \"onAirYn\": \"N\",							")
+//						.append("          \"onAirUrl\": \"\",							")
+//						.append("          \"startTm\": \"100000\",						")
+//						.append("          \"gameNm\": \"여자 프리 스케이팅 - 단체전\",		")
+//						.append("          \"gameId\": \"4\",							")
+//						.append("          \"resultYn\": \"N\"							")
+//						.append("        },												")
+//						.append("        {												")
+//						.append("          \"onAirYn\": \"N\",							")
+//						.append("          \"onAirUrl\": \"\",							")
+//						.append("          \"startTm\": \"113000\",						")
+//						.append("          \"gameNm\": \"남자 프리 스케이팅 - 단체전\",		")
+//						.append("          \"gameId\": \"2\",							")
+//						.append("          \"resultYn\": \"N\"							")
+//						.append("        }												")
+//						.append("      ]												")
+//						.append("    }													")
+//						.append("  ],													")
+//						.append("  \"compId\": \"A0001\",								")
+//						.append("  \"rstCd\": \"000\",									")
+//						.append("  \"compImgUrl\": \"" + TEST_DATA_URL + "/test_img/comp_logo.png\",								")
+//						.append("  \"compSubImgUrl\": \"" + TEST_DATA_URL + "/test_img/comp_logo_sub.png\",								")
+//						.append("  \"compNm\": \"평창 2018 올림픽\"							")
+//						.append("}                                              		");
+//				resultMap = mapper.readValue(sb.toString(), new TypeReference<HashMap<String, Object>>() {});	
+//				//
+//
+//				ResultUtil.setSuccess(resultMap);
+//			}
+//			else {
+//				handleError(invalidParams, resultMap);
+//			}
+//		}
+//		catch(Exception e) {
+//			logger.error(procTitle + "Exception :: ", e);
+//			handleError(resultMap, e);
+//		}
+//
+//		logger.debug(procTitle + "Result :: " + resultMap.toString());
+//		logger.info(procTitle + "End schedule :: ");
+//		
+//		return resultMap;
+//	}
+//	
+//	
+//	/**
+//	 * 경기 결과 정보 조회 
+//	 * @param jsonStr
+//	 * @param gameId
+//	 * @return
+//	 */
+//	@RequestMapping(value = "/mobile/result/{gameId}", method = RequestMethod.POST)
+//	public @ResponseBody Map<String, Object> result(
+//			@RequestBody String jsonStr,
+//			@PathVariable String gameId) {
+//		
+//		String procTitle = "[경기 결과 정보 조회] ";
+//		logger.info(procTitle + "Start result :: gameId=" + gameId);
+//		logger.info(procTitle + "Request Parameters :: " + jsonStr);
+//		
+//		Map<String, Object> resultMap = new HashMap<String, Object>();
+//
+//		try {
+//			ObjectMapper mapper = new ObjectMapper();			
+//			Map<String, Object> param = mapper.readValue(jsonStr, new TypeReference<HashMap<String, Object>>() {});				
+//			List<String> invalidParams = CommonUtil.getInvalidParams(defaultValidKeys, param);
+//			
+//			param.put("gameId", gameId);
+//			
+//			if(invalidParams != null && invalidParams.size() == 0) {
+//				
+//				
+//				// Dummy data
+//				StringBuilder sb = new StringBuilder()
+//					.append("{                                                                                          ")
+//					.append("   \"rstCd\":\"000\",																		")
+//					.append("   \"rstList\":[  																			")
+//					.append("      {  																					")
+//					.append("         \"rank\":\"1\",																	")
+//					.append("         \"nation\":\"대한민국\",																 ")
+//					.append("         \"playerNm\":\"감강인\",															 ")
+//					.append("         \"result\":\"72.20\",																")
+//					.append("         \"flagImgUrl\":\"" + TEST_DATA_URL + "/test_img/flag/icon_kor.png\",	")
+//					.append("         \"vodId\":\"V0002\",																")
+//					.append("         \"pVodId\":\"V0002\",																")
+//					.append("         \"vodTitle\":\"1.한국 이호정/감강인 아이스댄스\",											")
+//					.append("         \"vodUrl\":\"" + TEST_DATA_URL + "/m001/playlist.m3u8\",				")
+//					.append("         \"vodTrackYn\":\"Y\"																")
+//					.append("      },																					")
+//					.append("      {  																					")
+//					.append("         \"rank\":\"2\",																	")
+//					.append("         \"nation\":\"대한민국\",																 ")
+//					.append("         \"playerNm\":\"이호정\",															 ")
+//					.append("         \"result\":\"70.00\",																")
+//					.append("         \"flagImgUrl\":\"" + TEST_DATA_URL + "/test_img/flag/icon_usa.png\",	")
+//					.append("         \"vodId\":\"V0001\",																")
+//					.append("         \"pVodId\":\"V0002\",																")
+//					.append("         \"vodTitle\":\"2.한국 이호정/감강인 아이스댄스\",											")
+//					.append("         \"vodUrl\":\"" + TEST_DATA_URL + "/m002/playlist.m3u8\",				")
+//					.append("         \"vodTrackYn\":\"N\"																")
+//					.append("      },																					")
+//					.append("      {  																					")
+//					.append("         \"rank\":\"3\",																	")
+//					.append("         \"nation\":\"대한민국\",																 ")
+//					.append("         \"playerNm\":\"감강인\",															 ")
+//					.append("         \"result\":\"69.00\",																")
+//					.append("         \"flagImgUrl\":\"" + TEST_DATA_URL + "/test_img/flag/icon_jpn.png\",	")
+//					.append("         \"vodId\":\"V0002\",																")
+//					.append("         \"pVodId\":\"V0002\",																")
+//					.append("         \"vodTitle\":\"3.한국 이호정/감강인 아이스댄스\",											")
+//					.append("         \"vodUrl\":\"" + TEST_DATA_URL + "/m001/playlist.m3u8\",				")
+//					.append("         \"vodTrackYn\":\"Y\"																")
+//					.append("      },																					")
+//					.append("      {  																					")
+//					.append("         \"rank\":\"4\",																	")
+//					.append("         \"nation\":\"대한민국\",																 ")
+//					.append("         \"playerNm\":\"감강인\",															 ")
+//					.append("         \"result\":\"68.00\",																")
+//					.append("         \"flagImgUrl\":\"\",")//\"http://dev.copynpaste.co.kr/its/test_img/flag/icon_hkg.png\",	")
+//					.append("         \"vodId\":\"V0002\",																")
+//					.append("         \"pVodId\":\"V0002\",																")
+//					.append("         \"vodTitle\":\"4.한국 이호정/감강인 아이스댄스\",											")
+//					.append("         \"vodUrl\":\"" + TEST_DATA_URL + "/m001/playlist.m3u8\",				")
+//					.append("         \"vodTrackYn\":\"Y\"																")
+//					.append("      }																					")
+//					.append("   ],																						")
+//					.append("   \"tsList\":[]																			")
+//					.append("}																							");
+//				resultMap = mapper.readValue(sb.toString(), new TypeReference<HashMap<String, Object>>() {});	
+//				//
+//				
+//				ResultUtil.setSuccess(resultMap);
+//			}
+//			else {
+//				handleError(invalidParams, resultMap);
+//			}
+//		}
+//		catch(Exception e) {
+//			logger.error(procTitle + "Exception :: ", e);
+//			handleError(resultMap, e);
+//		}
+//
+//		logger.debug(procTitle + "Result :: " + resultMap.toString());
+//		logger.info(procTitle + "End result :: ");
+//		
+//		return resultMap;
+//	}
+//
+//	
+//	/**
+//	 * 대회별 리플레이 목록 조회
+//	 * @param compId
+//	 * @param jsonStr
+//	 * @return
+//	 */
+//	@RequestMapping(value = "/mobile/replayGames/{compId}", method = RequestMethod.POST)
+//	public @ResponseBody Map<String, Object> replayGames(
+//			@PathVariable String compId,
+//			@RequestBody String jsonStr) {
+//		
+//		String procTitle = "[리플레이 목록 조회] ";
+//		logger.info(procTitle + "Start replayGames :: ");
+//		logger.info(procTitle + "Request Parameters :: " + jsonStr);
+//		
+//		Map<String, Object> resultMap = new HashMap<String, Object>();
+//
+//		try {
+//			ObjectMapper mapper = new ObjectMapper();			
+//			Map<String, Object> param = mapper.readValue(jsonStr, new TypeReference<HashMap<String, Object>>() {});				
+//			List<String> invalidParams = CommonUtil.getInvalidParams(defaultValidKeys, param);
+//			
+//			param.put("compId", compId);
+//			
+//			if(invalidParams != null && invalidParams.size() == 0) {
+//				
+//				StringBuilder sb = new StringBuilder()
+//					.append("{                                                            ")
+//					.append("   \"rstCd\":\"\",											  ")
+//					.append("   \"gameList\":[  										  ")
+//					.append("      {  													  ")
+//					.append("         \"gameId\":\"G0001\",								  ")
+//					.append("         \"gameNm\":\"남자 쇼트 프로그램 - 단체전\"					  ")
+//					.append("      },													  ")
+//					.append("      {  													  ")
+//					.append("         \"gameId\":\"G0002\",								  ")
+//					.append("         \"gameNm\":\"페어 쇼트 프로그램 - 단체전\"					  ")
+//					.append("      },													  ")
+//					.append("      {  													  ")
+//					.append("         \"gameId\":\"G0003\",								  ")
+//					.append("         \"gameNm\":\"여자 프리 스케이팅 - 단체전\"					  ")
+//					.append("      },													  ")
+//					.append("      {  													  ")
+//					.append("         \"gameId\":\"G0004\",								  ")
+//					.append("         \"gameNm\":\"페어-Short Program\"					  ")
+//					.append("      }													  ")
+//					.append("   ],														  ")
+//					.append("   \"replayList\":[  										  ")
+//					.append("      {  													  ")
+//					.append("         \"vodId\":\"V0001\",								  ")
+//					.append("         \"vodTitle\":\"한국 박소윤\",			  ")
+//					.append("         \"thumbUrl\":\"" + TEST_DATA_URL + "/test_img/replay/r1.png\",		  ")
+//					.append("         \"vodUrl\":\"" + TEST_DATA_URL + "/m001/playlist.m3u8\",		  ")
+//					.append("         \"vodTrackYn\":\"Y\",								  ")
+//					.append("         \"duration\":\"001000\"							  ")
+//					.append("      },													  ")
+//					.append("      {  													  ")
+//					.append("         \"vodId\":\"V0002\",								  ")
+//					.append("         \"vodTitle\":\"캐나다 캐이틀린 오즈먼드\",			  ")
+//					.append("         \"thumbUrl\":\"" + TEST_DATA_URL + "/test_img/replay/r2.png\",		  ")
+//					.append("         \"vodUrl\":\"" + TEST_DATA_URL + "/m002/playlist.m3u8\",		  ")
+//					.append("         \"vodTrackYn\":\"Y\",								  ")
+//					.append("         \"duration\":\"001000\"							  ")
+//					.append("      },													  ")
+//					.append("      {  													  ")
+//					.append("         \"vodId\":\"V0003\",								  ")
+//					.append("         \"vodTitle\":\"캐나다 패트릭 챈\",			  ")
+//					.append("         \"thumbUrl\":\"" + TEST_DATA_URL + "/test_img/replay/r3.png\",		  ")
+//					.append("         \"vodUrl\":\"" + TEST_DATA_URL + "/m001/playlist.m3u8\",		  ")
+//					.append("         \"vodTrackYn\":\"Y\",								  ")
+//					.append("         \"duration\":\"001000\"							  ")
+//					.append("      },													  ")
+//					.append("      {  													  ")
+//					.append("         \"vodId\":\"V0004\",								  ")
+//					.append("         \"vodTitle\":\"필리핀 마르티네즈\",			  ")
+//					.append("         \"thumbUrl\":\"" + TEST_DATA_URL + "/test_img/replay/r4.png\",		  ")
+//					.append("         \"vodUrl\":\"" + TEST_DATA_URL + "/m002/playlist.m3u8\",		  ")
+//					.append("         \"vodTrackYn\":\"N\",								  ")
+//					.append("         \"duration\":\"001000\"							  ")
+//					.append("      }													  ")
+//					.append("   ]														  ")
+//					.append("}															  ")
+//				;
+//				resultMap = mapper.readValue(sb.toString(), new TypeReference<HashMap<String, Object>>() {});	
+//				
+//				
+//				ResultUtil.setSuccess(resultMap);
+//			}
+//			else {
+//				handleError(invalidParams, resultMap);
+//			}
+//		}
+//		catch(Exception e) {
+//			logger.error(procTitle + "Exception :: ", e);
+//			handleError(resultMap, e);
+//		}
+//
+//		logger.debug(procTitle + "Result :: " + resultMap.toString());
+//		logger.info(procTitle + "End replayGames :: ");
+//		
+//		return resultMap;
+//	}
+//	
+//	/**
+//	 * 리플레이 영상 목록 조회
+//	 * @param jsonStr
+//	 * @param gameId
+//	 * @return
+//	 */
+//	@RequestMapping(value = "/mobile/replay/{gameId}", method = RequestMethod.POST)
+//	public @ResponseBody Map<String, Object> replay(
+//			@RequestBody String jsonStr,
+//			@PathVariable String gameId) {
+//		
+//		String procTitle = "[리플레이 영상 목록 조회] ";
+//		logger.info(procTitle + "Start replay :: gameId=" + gameId);
+//		logger.info(procTitle + "Request Parameters :: " + jsonStr);
+//		
+//		Map<String, Object> resultMap = new HashMap<String, Object>();
+//
+//		try {
+//			ObjectMapper mapper = new ObjectMapper();			
+//			Map<String, Object> param = mapper.readValue(jsonStr, new TypeReference<HashMap<String, Object>>() {});				
+//			List<String> invalidParams = CommonUtil.getInvalidParams(defaultValidKeys, param);
+//			
+//			param.put("gameId", gameId);
+//			
+//			if(invalidParams != null && invalidParams.size() == 0) {
+//				
+//				
+//				
+//				StringBuilder sb = new StringBuilder()
+//						.append("{                                                            ")
+//						.append("   \"rstCd\":\"\",											  ")
+//						.append("   \"replayList\":[  										  ")
+//						.append("      {  													  ")
+//						.append("         \"vodId\":\"V0002\",								  ")
+//						.append("         \"vodTitle\":\"캐나다 캐이틀린 오즈먼드\",			  ")
+//						.append("         \"thumbUrl\":\"" + TEST_DATA_URL + "/test_img/replay/r2.png\",		  ")
+//						.append("         \"vodUrl\":\"" + TEST_DATA_URL + "/m002/playlist.m3u8\",		  ")
+//						.append("         \"vodTrackYn\":\"Y\",								  ")
+//						.append("         \"duration\":\"001000\"							  ")
+//						.append("      },													  ")
+//						.append("      {  													  ")
+//						.append("         \"vodId\":\"V0001\",								  ")
+//						.append("         \"vodTitle\":\"한국 박소윤\",			  ")
+//						.append("         \"thumbUrl\":\"" + TEST_DATA_URL + "/test_img/replay/r1.png\",		  ")
+//						.append("         \"vodUrl\":\"" + TEST_DATA_URL + "/m001/playlist.m3u8\",		  ")
+//						.append("         \"vodTrackYn\":\"N\",								  ")
+//						.append("         \"duration\":\"001000\"							  ")
+//						.append("      },													  ")
+//						.append("      {  													  ")
+//						.append("         \"vodId\":\"V0004\",								  ")
+//						.append("         \"vodTitle\":\"필리핀 마르티네즈\",			  ")
+//						.append("         \"thumbUrl\":\"" + TEST_DATA_URL + "/test_img/replay/r4.png\",		  ")
+//						.append("         \"vodUrl\":\"" + TEST_DATA_URL + "/m002/playlist.m3u8\",		  ")
+//						.append("         \"vodTrackYn\":\"N\",								  ")
+//						.append("         \"duration\":\"001000\"							  ")
+//						.append("      },													  ")
+//						.append("      {  													  ")
+//						.append("         \"vodId\":\"V0003\",								  ")
+//						.append("         \"vodTitle\":\"캐나다 패트릭 챈\",			  ")
+//						.append("         \"thumbUrl\":\"" + TEST_DATA_URL + "/test_img/replay/r3.png\",		  ")
+//						.append("         \"vodUrl\":\"" + TEST_DATA_URL + "/m001/playlist.m3u8\",		  ")
+//						.append("         \"vodTrackYn\":\"Y\",								  ")
+//						.append("         \"duration\":\"001000\"							  ")
+//						.append("      },													  ")
+//						.append("      {  													  ")
+//						.append("         \"vodId\":\"V0001\",								  ")
+//						.append("         \"vodTitle\":\"한국 박소윤\",			  ")
+//						.append("         \"thumbUrl\":\"" + TEST_DATA_URL + "/test_img/replay/r1.png\",		  ")
+//						.append("         \"vodUrl\":\"" + TEST_DATA_URL + "/m001/playlist.m3u8\",		  ")
+//						.append("         \"vodTrackYn\":\"N\",								  ")
+//						.append("         \"duration\":\"001000\"							  ")
+//						.append("      },													  ")
+//						.append("      {  													  ")
+//						.append("         \"vodId\":\"V0004\",								  ")
+//						.append("         \"vodTitle\":\"필리핀 마르티네즈\",			  ")
+//						.append("         \"thumbUrl\":\"" + TEST_DATA_URL + "/test_img/replay/r4.png\",		  ")
+//						.append("         \"vodUrl\":\"" + TEST_DATA_URL + "/m002/playlist.m3u8\",		  ")
+//						.append("         \"vodTrackYn\":\"N\",								  ")
+//						.append("         \"duration\":\"001000\"							  ")
+//						.append("      }													  ")
+//						.append("   ]														  ")
+//						.append("}															  ")
+//					;
+//					resultMap = mapper.readValue(sb.toString(), new TypeReference<HashMap<String, Object>>() {});	
+//				
+//				ResultUtil.setSuccess(resultMap);
+//			}
+//			else {
+//				handleError(invalidParams, resultMap);
+//			}
+//		}
+//		catch(Exception e) {
+//			logger.error(procTitle + "Exception :: ", e);
+//			handleError(resultMap, e);
+//		}
+//
+//		logger.debug(procTitle + "Result :: " + resultMap.toString());
+//		logger.info(procTitle + "End replay :: gameId=" + gameId);
+//		
+//		return resultMap;
+//	}
+//	
+//	/**
+//	 * 타임슬라이스 목록 조회
+//	 * @param jsonStr
+//	 * @return
+//	 */
+//	@RequestMapping(value = "/mobile/timeslice", method = RequestMethod.POST)
+//	public @ResponseBody Map<String, Object> timeslice(
+//			@RequestBody String jsonStr) {
+//		
+//		String procTitle = "[타임슬라이스 목록 조회] ";
+//		logger.info(procTitle + "Start timeslice :: ");
+//		logger.info(procTitle + "Request Parameters :: " + jsonStr);
+//		
+//		Map<String, Object> resultMap = new HashMap<String, Object>();
+//
+//		try {
+//			ObjectMapper mapper = new ObjectMapper();			
+//			Map<String, Object> param = mapper.readValue(jsonStr, new TypeReference<HashMap<String, Object>>() {});				
+//			List<String> invalidParams = CommonUtil.getInvalidParams(defaultValidKeys, param);
+//			
+//			if(invalidParams != null && invalidParams.size() == 0) {
+//				
+//
+//				// 타임슬라이스 영상 목록
+//				{
+//					ArrayList<Map<String, Object>> tsList = new ArrayList<Map<String, Object>>();
+//					String[] keys = {"categoryId", "categoryNm", "tsList"};
+//					String[][] values = {
+//							{"G0001", "여자 싱글 쇼트프로그램"},
+//							{"G0002", "남자 싱글 쇼트프로그램"}
+//					};
+//					String[] keysSub = {"vodId", "vodTitle", "thumbUrl", "vodUrl", "duration"};
+//					String[][] valuesSub = {
+//							{"V0001", "애절한 박소윤 연기", TEST_DATA_URL + "/test_img/timeslice/t1.png", TEST_DATA_URL + "/v001/001.mp4", "300"},
+//							{"V0002", "리지준의 스파이럴", TEST_DATA_URL + "/test_img/timeslice/t2.png", TEST_DATA_URL + "/v001/002.mp4", "200"},
+//							{"V0003", "그레이시의 손동작", TEST_DATA_URL + "/test_img/timeslice/t3.png", TEST_DATA_URL + "/v001/003.mp4", "100"},
+//							{"V0004", "혼고의 간결한 스핀", TEST_DATA_URL + "/test_img/timeslice/t4.png", TEST_DATA_URL + "/v001/004.mp4", "100"},
+//							{"V0005", "무라카미의 점프 도약", TEST_DATA_URL + "/test_img/timeslice/t5.png", TEST_DATA_URL + "/v001/001.mp4", "200"},
+//							{"V0006", "이제 미야하라의 시간", TEST_DATA_URL + "/test_img/timeslice/t6.png", TEST_DATA_URL + "/v001/002.mp4", "300"},
+//					};
+//					String[][] valueSub2 = {
+//							{"V0004", "혼고의 간결한 스핀", TEST_DATA_URL+"/test_img/timeslice/t4.png", TEST_DATA_URL+"/v001/004.mp4", "100"},
+//							{"V0005", "무라카미의 점프 도약", TEST_DATA_URL+"/test_img/timeslice/t5.png", TEST_DATA_URL+"/v001/001.mp4", "200"},
+//							{"V0006", "이제 미야하라의 시간", TEST_DATA_URL+"/test_img/timeslice/t6.png", TEST_DATA_URL+"/v001/002.mp4", "300"},
+//							{"V0001", "애절한 박소윤 연기", TEST_DATA_URL+"/test_img/timeslice/t1.png", TEST_DATA_URL+"/v001/001.mp4", "400"},
+//							{"V0002", "리지준의 스파이럴", TEST_DATA_URL+"/test_img/timeslice/t2.png", TEST_DATA_URL+"/v001/002.mp4", "500"},
+//							{"V0003", "그레이시의 손동작", TEST_DATA_URL+"/test_img/timeslice/t3.png", TEST_DATA_URL+"/v001/003.mp4", "600"},
+//					};
+//					
+//					for(int i=0; i<values.length; i++) {
+//						Map<String, Object> map = new HashMap<String, Object>();
+//						int j = 0;
+//						for(j=0; j<values[i].length; j++) {
+//							map.put(keys[j], values[i][j]);
+//						}
+//						
+//						if(i>0) valuesSub = valueSub2;
+//						ArrayList<Map<String, Object>> vodList = new ArrayList<Map<String, Object>>();
+//						for(int m=0; m<valuesSub.length; m++) {
+//							Map<String, Object> mapSub = new HashMap<String, Object>();
+//							for(int n=0; n<valuesSub[m].length; n++) {
+//								mapSub.put(keysSub[n], valuesSub[m][n]);
+//							}
+//							vodList.add(mapSub);
+//						}						
+//						map.put(keys[j], vodList);						
+//						tsList.add(map);
+//					}
+//					resultMap.put("categoryList", tsList);
+//				}
+//				
+//				ResultUtil.setSuccess(resultMap);
+//			}
+//			else {
+//				handleError(invalidParams, resultMap);
+//			}
+//		}
+//		catch(Exception e) {
+//			logger.error(procTitle + "Exception :: ", e);
+//			handleError(resultMap, e);
+//		}
+//
+//		logger.debug(procTitle + "Result :: " + resultMap.toString());
+//		logger.info(procTitle + "End timeslice :: ");
+//		
+//		return resultMap;
+//	}
+//	
+//	/**
+//	 * 이용로그 누적
+//	 * @param jsonStr
+//	 * @return
+//	 */
+//	@RequestMapping(value = "/mobile/log", method = RequestMethod.POST)
+//	public @ResponseBody Map<String, Object> log(
+//			@RequestBody String jsonStr) {
+//		
+//		String procTitle = "[이용로그 누적] ";
+//		logger.info(procTitle + "Start log :: ");
+//		logger.info(procTitle + "Request Parameters :: " + jsonStr);
+//		
+//		Map<String, Object> resultMap = new HashMap<String, Object>();
+//
+//		try {
+//			String[] validKeys = {defaultValidKeys[0], "logList"};
+//			
+//			ObjectMapper mapper = new ObjectMapper();			
+//			Map<String, Object> param = mapper.readValue(jsonStr, new TypeReference<HashMap<String, Object>>() {});				
+//			List<String> invalidParams = CommonUtil.getInvalidParams(validKeys, param);
+//			
+//			if(invalidParams != null && invalidParams.size() == 0) {
+//				
+//				logService.insertLog(param);
+//				
+//				ResultUtil.setSuccess(resultMap);
+//			}
+//			else {
+//				handleError(invalidParams, resultMap);
+//			}
+//		}
+//		catch(Exception e) {
+//			logger.error(procTitle + "Exception :: ", e);
+//			handleError(resultMap, e);
+//		}
+//		
+//		logger.debug(procTitle + "Result :: " + resultMap.toString());		
+//		logger.info(procTitle + "End log :: ");
+//		
+//		return resultMap;
+//	}
+//	
+//	/**
+//	 * 이용안내 조회
+//	 * @param jsonStr
+//	 * @return
+//	 */
+//	@RequestMapping(value = "/mobile/guide", method = RequestMethod.POST)
+//	public @ResponseBody Map<String, Object> guide(
+//			@RequestBody String jsonStr) {
+//		
+//		String procTitle = "[이용안내 조회] ";
+//		logger.info(procTitle + "Start guide :: ");
+//		logger.info(procTitle + "Request Parameters :: " + jsonStr);
+//		
+//		Map<String, Object> resultMap = new HashMap<String, Object>();
+//
+//		try {
+//			ObjectMapper mapper = new ObjectMapper();			
+//			Map<String, Object> param = mapper.readValue(jsonStr, new TypeReference<HashMap<String, Object>>() {});				
+//			List<String> invalidParams = CommonUtil.getInvalidParams(defaultValidKeys, param);
+//			
+//			if(invalidParams != null && invalidParams.size() == 0) {
+//				
+//				List<Map<String, Object>> list = guideService.selectGuideList(param);
+//				resultMap.put("guideList", list);
+//				
+//				ResultUtil.setSuccess(resultMap);
+//			}
+//			else {
+//				handleError(invalidParams, resultMap);
+//			}
+//		}
+//		catch(Exception e) {
+//			logger.error(procTitle + "Exception :: ", e);
+//			handleError(resultMap, e);
+//		}
+//
+//		logger.debug(procTitle + "Result :: " + resultMap.toString());
+//		logger.info(procTitle + "End guide :: ");
+//		
+//		return resultMap;
+//	}
+//	
+//	/**
+//	 * 라이브 중계 정보 조회
+//	 * @param jsonStr
+//	 * @return
+//	 */
+//	@RequestMapping(value = "/mobile/onAir", method = RequestMethod.POST)
+//	public @ResponseBody Map<String, Object> onAir(
+//			@RequestBody String jsonStr) {
+//		
+//		String procTitle = "[라이브 중계 정보 조회] ";
+//		logger.info(procTitle + "Start onAir :: ");
+//		logger.info(procTitle + "Request Parameters :: " + jsonStr);
+//		
+//		Map<String, Object> resultMap = new HashMap<String, Object>();
+//
+//		try {
+//			ObjectMapper mapper = new ObjectMapper();			
+//			Map<String, Object> param = mapper.readValue(jsonStr, new TypeReference<HashMap<String, Object>>() {});				
+//			List<String> invalidParams = CommonUtil.getInvalidParams(defaultValidKeys, param);
+//			
+//			if(invalidParams != null && invalidParams.size() == 0) {
+//				
+//				
+//				// Dummy data
+//				// 진행중인 대회
+//				{
+//					Map<String, Object> compInfo = new HashMap<String, Object>();
+//					resultMap.put("liveYn", "Y");	
+//					
+//					compInfo.put("compId","C0001");
+//					compInfo.put("compNm","2016 ISU 4대륙 피겨 선수권 대회");
+//					compInfo.put("compImgUrl", TEST_DATA_URL + "/test_img/comp_logo.png");
+//					compInfo.put("compSubImgUrl", TEST_DATA_URL + "/test_img/comp_logo_sub.png");
+//					compInfo.put("gameId","G0001");
+//					compInfo.put("gameNm","여자 싱글 프리스케이팅(FS)");
+//					compInfo.put("gameDt","20161102");
+//					compInfo.put("startTm","1830");
+//					compInfo.put("onAirYn","Y");
+//					compInfo.put("onAirUrl",TEST_LIVE_URL);//"http://rnd.copynpaste.co.kr/its/m001/playlist.m3u8");
+//					compInfo.put("vodId","");
+//					compInfo.put("vodTitle","");
+//					compInfo.put("vodUrl","");
+//					compInfo.put("vodTrackYn","N");
+//					compInfo.put("pVodId","M20170113191541086");
+//					resultMap.put("compInfo", compInfo);				
+//				}
+//				
+//				ResultUtil.setSuccess(resultMap);
+//			}
+//			else {
+//				handleError(invalidParams, resultMap);
+//			}
+//		}
+//		catch(Exception e) {
+//			logger.error(procTitle + "Exception :: ", e);
+//			handleError(resultMap, e);
+//		}
+//		
+//		logger.debug(procTitle + "Result :: " + resultMap.toString());		
+//		logger.info(procTitle + "End onAir :: ");
+//		
+//		return resultMap;
+//	}
+//	
+//	
+//	
+//	/**
+//	 * 트래킹 정보 조회
+//	 * @param jsonStr
+//	 * @return
+//	 */
+//	@RequestMapping(value = "/mobile/trackingInfo", method = RequestMethod.POST)
+//	public @ResponseBody Map<String, Object> trackInfo(
+//			@RequestBody String jsonStr) {
+//		
+//		String procTitle = "[트래킹 정보 조회] ";
+//		logger.info(procTitle + "Start trackInfo :: ");
+//		logger.info(procTitle + "Request Parameters :: " + jsonStr);
+//		
+//		Map<String, Object> resultMap = new HashMap<String, Object>();
+//
+//		try {
+//			ObjectMapper mapper = new ObjectMapper();			
+//			Map<String, Object> param = mapper.readValue(jsonStr, new TypeReference<HashMap<String, Object>>() {});
+//			
+//			String[] validKeys = {defaultValidKeys[0], "frameNo"};
+//			List<String> invalidParams = CommonUtil.getInvalidParams(validKeys, param);
+//			
+//			if(invalidParams != null && invalidParams.size() == 0) {
+//				
+//				// 파라미터에 multiview id(pVodId)가 포함되어있으면 리플레이 VOD, 없으면 LIVE VOD로 간주
+//				boolean isLiveVod = false;
+//				
+//				String multiviewId = "";
+//				if(param.containsKey("pVodId")) { // 리플레이영상
+//					multiviewId = ((String)param.get("pVodId")).trim();
+//					param.put("multiviewId", multiviewId);
+//					param.remove("pVodId");
+//				}
+//
+//				if(multiviewId.equals("")) { // 라이브영상					
+//					multiviewId = multiviewService.selectLiveMultiviewId();
+//					param.put("multiviewId", multiviewId);
+//					isLiveVod = true;
+//				} else {
+////					String vodId = CommonUtil.null2Empty((String)param.get("vodId")).trim();
+////					if(vodId.equals("")) {
+////						List<String> invalidParams2 = new ArrayList<>();
+////						invalidParams2.add("vodId");
+////						handleError(invalidParams2, resultMap);
+////						return resultMap;
+////					}
+//				}
+//
+//				// 트래킹 여부 조회
+//				String trackingYn = multiviewService.selectTrackingYn(param);
+//				boolean isTracking = "Y".equals(trackingYn);
+//				
+//				// 트래킹 정보 목록
+//				List<Map<String, Object>> trackingList;
+//				
+//				// 시점영상 목록
+//				List<String> viewPointList;
+//				
+//				if(isTracking) {
+//					trackingList = trackingInfoService.selectTrackingList(param);
+//					viewPointList = trackingInfoService.selectMuxingList(param, isLiveVod);
+//				} else {
+//					trackingList = new ArrayList<>();
+//					viewPointList = new ArrayList<>();
+//				}
+//				
+//				trackingYn = (trackingList.size() > 0) ? trackingYn : "N";
+//								
+//				resultMap.put("trackingYn", trackingYn);
+//				resultMap.put("trackingList", trackingList);
+//				resultMap.put("streamList", viewPointList);
+//				
+//				ResultUtil.setSuccess(resultMap);
+//			}
+//			else {
+//				handleError(invalidParams, resultMap);
+//			}
+//		}
+//		catch(Exception e) {
+//			logger.error(procTitle + "Exception :: ", e);
+//			handleError(resultMap, e);
+//		}
+//		
+//		logger.debug(procTitle + "Result :: " + resultMap.toString());		
+//		logger.info(procTitle + "End trackInfo :: ");
+//		
+//		return resultMap;
+//	}
+//}
